@@ -1,0 +1,1089 @@
+/* =========================================
+   TOUCH GRASS — CAMPUS EXPLORER
+   ========================================= */
+
+/* 1. Colors and theme */
+:root {
+  --cream: #fff9ed;
+  --paper: #fffdf7;
+  --navy: #123653;
+  --text: #244d67;
+  --muted: #526c7c;
+
+  --ocean: #147f98;
+  --ocean-dark: #09667e;
+  --sky: #d8f0f7;
+  --seafoam: #dbefe5;
+
+  --sand: #f8d58b;
+  --coral: #ec795f;
+  --border-light: #cedbdd;
+
+  --outline: 2px solid var(--navy);
+  --radius: 20px;
+  --shadow: 4px 5px 0 rgb(18 54 83 / 10%);
+
+  --header-height: 80px;
+}
+
+/* 2. Base styles */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  background: var(--cream);
+  color: var(--navy);
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--navy);
+  line-height: 1.2;
+}
+
+a {
+  color: var(--ocean-dark);
+}
+
+button {
+  cursor: pointer;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--ocean-dark);
+  outline-offset: 4px;
+}
+
+/* 3. Header */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+
+  height: var(--header-height);
+  padding: 12px 6%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 20px;
+
+  background: var(--seafoam);
+}
+
+.header-brand-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 22px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--navy);
+  text-decoration: none;
+}
+
+.brand-name {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 42px);
+  font-weight: 800;
+  letter-spacing: -1.4px;
+  line-height: 1.1;
+}
+
+.brand-icon {
+  width: 66px;
+  height: 54px;
+  object-fit: contain;
+}
+
+.tagline {
+  margin: 0;
+  padding-left: 22px;
+  border-left: 1px solid var(--navy);
+  color: var(--text);
+  font-size: 16px;
+}
+
+/* 4. Prototype notice */
+.demo-banner {
+  padding: 11px 12px;
+  background: var(--sky);
+  color: var(--navy);
+  border-radius: 10px;
+  text-align: center;
+  font-size: 14px;
+}
+
+
+.demo-banner strong {
+  font-weight: 700;
+}
+
+/* 5. Main layout */
+.app-layout {
+  display: grid;
+  grid-template-columns: 330px minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+
+  margin-top: 20px
+}
+
+/* 6. Sidebar panel */
+.sidebar {
+  min-width: 0;
+  padding: 22px;
+  background: var(--paper);
+  border: var(--outline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.sidebar h1 {
+  margin-bottom: 8px;
+  font-size: 32px;
+  letter-spacing: -1px;
+}
+
+.sidebar h2 {
+  margin-bottom: 14px;
+  font-size: 18px;
+}
+
+.eyebrow {
+  margin-bottom: 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+}
+
+.intro {
+  margin-bottom: 22px;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.sidebar-section {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-light);
+}
+
+/* 7. Mermaid guide and speech bubble */
+.mascot-guide {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.mascot-guide img,
+.guide-mascot {
+  width: 108px;
+  height: 120px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.guide-bubble {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+  background: var(--white, #ffffff);
+  border: var(--outline);
+  border-radius: 18px;
+  box-shadow: 3px 4px 0 rgb(18 54 83 / 9%);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.guide-bubble p {
+  margin: 0;
+}
+
+/* Small speech-bubble tail */
+.guide-bubble::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 24px;
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  border-left: var(--outline);
+  border-bottom: var(--outline);
+  transform: rotate(45deg);
+}
+
+/* 8. Search and form fields */
+.form-field {
+  margin-bottom: 18px;
+}
+
+.field-label,
+.sidebar form > label,
+.search-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--navy);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.sidebar input[type="text"],
+.sidebar input[type="search"],
+.sidebar select,
+.sidebar textarea,
+.search-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  background: #edf8fc;
+  color: var(--navy);
+  border: 2px solid #3b7b99;
+  border-radius: 12px;
+}
+
+.sidebar input::placeholder,
+.sidebar textarea::placeholder {
+  color: #5d7484;
+  opacity: 1;
+}
+
+.sidebar textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.sidebar input[type="text"]:focus,
+.sidebar input[type="search"]:focus,
+.sidebar select:focus,
+.sidebar textarea:focus {
+  background: #ffffff;
+  border-color: var(--ocean-dark);
+}
+
+/* Optional search icon wrapper */
+.search-field {
+  position: relative;
+}
+
+.search-field .search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.search-field .search-input {
+  padding-left: 44px;
+}
+
+/* 9. Filters */
+.filters,
+.preferences {
+  min-width: 0;
+  margin: 22px 0 0;
+  padding: 20px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border-light);
+}
+
+.filters legend,
+.preferences legend {
+  padding: 0 8px 0 0;
+  color: var(--navy);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.filter-option,
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  margin: 4px 0;
+  color: var(--navy);
+  font-size: 15px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.filter-option input,
+.checkbox-label input {
+  width: 21px;
+  height: 21px;
+  margin: 0;
+  accent-color: var(--ocean);
+  flex-shrink: 0;
+}
+
+.filter-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+.filter-icon svg,
+.filter-icon img {
+  width: 28px;
+  height: 28px;
+}
+
+/* 10. Raised buttons */
+.primary-button,
+.report-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 11px 20px;
+
+  background: var(--ocean);
+  color: #ffffff;
+  border: var(--outline);
+  border-radius: 14px;
+
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 20%),
+    0 4px 0 var(--navy);
+
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+
+  transition:
+    background-color 140ms ease,
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.primary-button:hover,
+.report-button:hover {
+  background: var(--ocean-dark);
+}
+
+.primary-button:active,
+.report-button:active {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 12%),
+    0 1px 0 var(--navy);
+}
+
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+
+  background: var(--sky);
+  color: var(--navy);
+  border: var(--outline);
+  border-radius: 12px;
+  box-shadow: 0 3px 0 rgb(18 54 83 / 18%);
+
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.secondary-button:hover {
+  background: #c7e8f2;
+}
+
+.secondary-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgb(18 54 83 / 18%);
+}
+
+.sidebar .primary-button {
+  width: 100%;
+  margin-top: 18px;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* 11. Location details card */
+.selected-report {
+  margin-top: 24px;
+  padding: 18px;
+
+  background: #fffaf0;
+  border: 2px solid var(--coral);
+  border-radius: 18px;
+  box-shadow: 0 5px 0 rgb(236 121 95 / 15%);
+}
+
+.report-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.report-heading h2,
+.report-heading .eyebrow {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.demo-badge {
+  display: inline-block;
+  padding: 4px 9px;
+  background: var(--sand);
+  color: #563b16;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.report-title {
+  margin-bottom: 7px;
+  font-size: 24px;
+  letter-spacing: -0.5px;
+}
+
+.report-location {
+  margin-bottom: 14px;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.report-description {
+  margin-bottom: 0;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.route-summary {
+  margin-top: 24px;
+  padding: 18px;
+  background: var(--seafoam);
+  border: var(--outline);
+  border-radius: 16px;
+}
+
+.route-summary h2 {
+  margin-bottom: 8px;
+}
+
+.route-summary p {
+  margin-bottom: 0;
+  color: var(--text);
+  font-size: 14px;
+}
+
+/* 12. Map-only page
+   This styles your existing #map immediately. */
+#map {
+  width: 100%;
+  height: calc(100vh - 40px);
+  min-height: 400px;
+
+  background: var(--seafoam);
+  border: var(--outline);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+/* 13. Map panel for the complete layout */
+.map-panel {
+  min-width: 0;
+  background: var(--paper);
+  border: var(--outline);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--cream);
+  border-bottom: var(--outline);
+  height: 88px;
+
+}
+
+.map-header h2 {
+  margin: 0;
+  font-size: 25px;
+  letter-spacing: -0.6px;
+}
+
+.campus-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--sky);
+  color: var(--navy);
+  border: var(--outline);
+  border-radius: 999px;
+  font-size: 14px;
+}
+
+/* Removes the duplicate frame when
+   #map is placed inside .map-panel */
+.map-panel #map {
+  height: 68vh;
+  min-height: 500px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* 14. Legend below the map */
+.map-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  padding: 16px 22px;
+  background: var(--cream);
+  border-top: var(--outline);
+  font-size: 13px;
+}
+
+.map-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+/* 15. Google Maps popup text */
+#map h3 {
+  color: var(--navy);
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+#map p {
+  max-width: 260px;
+  color: var(--text);
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 16. Optional footer mascot */
+.mascot-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.mascot-footer img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+.mascot-footer p {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+}
+
+/* 17. Tablet layout */
+@media (max-width: 1000px) {
+  .app-layout {
+    grid-template-columns: 290px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .sidebar {
+    padding: 18px;
+  }
+
+  .tagline {
+    padding-left: 0;
+    border-left: 0;
+    font-size: 14px;
+  }
+
+  .header-brand-group {
+    gap: 12px;
+  }
+
+  .mascot-guide img,
+  .guide-mascot {
+    width: 88px;
+    height: 104px;
+  }
+
+  .guide-bubble {
+    padding: 10px;
+    font-size: 13px;
+  }
+}
+
+
+/* 18. Mobile layout */
+@media (max-width: 740px) {
+
+  :root {
+  --header-height: 145px;
+}
+
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+
+  height: var(--header-height);
+  padding: 12px 6%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: nowrap;
+
+  gap: 10px;
+}
+
+.header-brand-group {
+  width: 100%;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+
+  gap: 12px;
+}
+
+.brand-name {
+  font-size: 30px;
+}
+
+.brand-icon {
+  width: 46px;
+  height: 42px;
+}
+
+.tagline {
+  width: auto;
+  margin: 0;
+  padding-left: 14px;
+
+  border-left: 1px solid var(--navy);
+
+  font-size: 14px;
+}
+
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: 0;
+}
+
+.page-content {
+  padding-top: calc(var(--header-height) + 16px);
+  padding-left: 6%;
+  padding-right: 6%;
+  padding-bottom: 80px;
+}
+  .header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-left: auto;
+
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .page-content {
+    padding-top: calc(var(--header-height) + 24px);
+    padding-left: 6%;
+    padding-right: 6%;
+    
+  }
+
+
+  .report-button {
+    min-height: 44px;
+    padding: 9px 14px;
+    font-size: 14px;
+  }
+
+  .demo-banner {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .app-layout {
+    grid-template-columns: 1fr;
+    margin-top: 16px;
+  }
+
+  .sidebar {
+    padding: 20px;
+  }
+
+  .sidebar h1 {
+    font-size: 30px;
+  }
+
+  .mascot-guide {
+    max-width: 360px;
+  }
+
+  #map {
+    height: calc(100vh - 24px);
+  }
+
+  .map-panel #map {
+    height: 60vh;
+    min-height: 380px;
+  }
+
+  .map-header {
+    padding: 14px 16px;
+  }
+
+  .map-header h2 {
+    font-size: 22px;
+  }
+
+  .map-legend {
+    gap: 12px 16px;
+    padding: 14px 16px;
+    font-size: 12px;
+  }
+}
+
+
+/* 19. Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .primary-button,
+  .report-button {
+    transition: none;
+  }
+}
+
+/** header portion*/
+.band-icon { 
+        width: 80px;
+        height: 90px; 
+        object-fit: contain;
+        flex-shrink: 0;
+}
+
+/*the mega mermaid*/
+.mascot-guide img{
+        width: 120px;
+        height:110px;
+        object-fit: contain;
+        flex-shrink: 0;
+
+    }
+/*adjusting and image related things*/
+.campus-decoration {
+  width: 280px;
+  max-width: 45%;
+  height: 76px;
+  object-fit: contain;
+  margin-left: auto;
+}
+
+.app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+
+  height: 60px;
+  padding: 0 6%;
+
+  display: flex;
+  align-items: center;
+
+  background: var(--seafoam);
+  border-top: 2px solid var(--navy);
+}
+
+.app-footer p {
+  margin: 0;
+}
+
+.page-content {
+  padding-top: calc(var(--header-height) + 20px);
+  padding-left: 6%;
+  padding-right: 6%;
+  padding-bottom: 80px;
+}
+
+/**styling header buttons**/
+.header-buttons {
+  display: flex;
+  gap: 16px;
+}
+
+.header-buttons a {
+  color: var(--navy);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+/**hover color change**/
+.header-buttons a:hover {
+  color: var(--coral);
+}
+
+/**tooltip message sections*/
+/** tooltip message sections */
+.tooltip {
+  position: relative;
+}
+
+.tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+
+  position: absolute;
+  top: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+
+  background: var(--navy);
+  color: white;
+
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+
+  width: max-content;
+  max-width: 220px;
+  white-space: normal;
+
+  z-index: 2000;
+
+  transition: opacity 0.2s ease;
+}
+
+.header-buttons .tooltip:first-child .tooltip-text {
+  left: 0;
+  transform: none;
+}
+
+.header-buttons .tooltip:last-child .tooltip-text {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+
+/* ==============================
+   QUICK COMMUNITY REPORT
+   ============================== */
+
+.quick-report {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-light);
+}
+
+.quick-report h2 {
+  margin-bottom: 14px;
+  font-size: 21px;
+}
+
+.report-mode-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.report-mode {
+  padding: 9px 8px;
+
+  background: var(--sky);
+  color: var(--navy);
+
+  border: 2px solid var(--navy);
+  border-radius: 10px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.report-mode:hover {
+  background: var(--seafoam);
+}
+
+.report-mode.active {
+  background: var(--ocean);
+  color: white;
+}
+
+.report-form-section {
+  margin-top: 16px;
+}
+
+.report-form-section label {
+  display: block;
+  margin: 12px 0 6px;
+
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.report-form-section input,
+.report-form-section select,
+.report-form-section textarea {
+  width: 100%;
+  padding: 9px 11px;
+
+  background: #edf8fc;
+  color: var(--navy);
+
+  border: 2px solid #3b7b99;
+  border-radius: 10px;
+
+  font: inherit;
+}
+
+.report-form-section textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.rating-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+
+.rating-row button {
+  min-height: 36px;
+
+  background: var(--sky);
+  color: var(--navy);
+
+  border: 2px solid var(--navy);
+  border-radius: 8px;
+
+  font-weight: 700;
+}
+
+.rating-row button:hover {
+  background: var(--seafoam);
+}
+
+.quick-submit {
+  width: 100%;
+  margin-top: 16px;
+  padding: 10px;
+
+  background: var(--ocean);
+  color: white;
+
+  border: 2px solid var(--navy);
+  border-radius: 10px;
+
+  font-weight: 700;
+}
+
+.quick-submit:hover {
+  background: var(--ocean-dark);
+}
+
+.hidden {
+  display: none;
+}

@@ -496,8 +496,6 @@
       };
 
       // ---------- Supabase setup (publishable key only, NEVER the secret key) ----------
-      // Vite fills these in from VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY
-      // (in .env.local for local testing, and in Vercel's Environment Variables for the live site)
       const SUPABASE_URL = "%VITE_SUPABASE_URL%";
       const SUPABASE_KEY = "%VITE_SUPABASE_PUBLISHABLE_KEY%";
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
