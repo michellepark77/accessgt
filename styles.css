@@ -964,3 +964,126 @@ button:disabled {
   visibility: visible;
   opacity: 1;
 }
+
+
+/* ==============================
+   QUICK COMMUNITY REPORT
+   ============================== */
+
+.quick-report {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-light);
+}
+
+.quick-report h2 {
+  margin-bottom: 14px;
+  font-size: 21px;
+}
+
+.report-mode-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.report-mode {
+  padding: 9px 8px;
+
+  background: var(--sky);
+  color: var(--navy);
+
+  border: 2px solid var(--navy);
+  border-radius: 10px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.report-mode:hover {
+  background: var(--seafoam);
+}
+
+.report-mode.active {
+  background: var(--ocean);
+  color: white;
+}
+
+.report-form-section {
+  margin-top: 16px;
+}
+
+.report-form-section label {
+  display: block;
+  margin: 12px 0 6px;
+
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.report-form-section input,
+.report-form-section select,
+.report-form-section textarea {
+  width: 100%;
+  padding: 9px 11px;
+
+  background: #edf8fc;
+  color: var(--navy);
+
+  border: 2px solid #3b7b99;
+  border-radius: 10px;
+
+  font: inherit;
+}
+
+.report-form-section textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.rating-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+
+.rating-row button {
+  min-height: 36px;
+
+  background: var(--sky);
+  color: var(--navy);
+
+  border: 2px solid var(--navy);
+  border-radius: 8px;
+
+  font-weight: 700;
+}
+
+.rating-row button:hover {
+  background: var(--seafoam);
+}
+
+.quick-submit {
+  width: 100%;
+  margin-top: 16px;
+  padding: 10px;
+
+  background: var(--ocean);
+  color: white;
+
+  border: 2px solid var(--navy);
+  border-radius: 10px;
+
+  font-weight: 700;
+}
+
+.quick-submit:hover {
+  background: var(--ocean-dark);
+}
+
+.hidden {
+  display: none;
+}
