@@ -149,8 +149,159 @@
         background: #000;
       }
 
+      /* ---------- Choice groups (facility cards + issue pills) ---------- */
+      fieldset {
+        border: none;
+        margin: 0;
+        padding: 0;
+        min-width: 0;
+      }
+
+      legend {
+        font-weight: 700;
+        margin-bottom: 8px;
+        padding: 0;
+      }
+
+      /* The real radio input is hidden; the styled span after it is what you see */
+      .choice input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+      }
+
+      .facility-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+
+      .facility-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 14px 6px;
+        border: 2px solid #d5dbe3;
+        border-radius: 12px;
+        background: var(--field);
+        text-align: center;
+        font-size: 0.92rem;
+        cursor: pointer;
+        height: 100%;
+      }
+
+      .facility-card .glyph { font-size: 1.8rem; line-height: 1; }
+
+      .choice input:checked + .facility-card,
+      .choice input:checked + .issue-pill {
+        border-color: var(--gt-navy);
+        background: #e3eaf2;
+        font-weight: 700;
+      }
+
+      .choice input:focus-visible + .facility-card,
+      .choice input:focus-visible + .issue-pill {
+        outline: 3px solid var(--gt-gold);
+        outline-offset: 2px;
+      }
+
+      .issue-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .issue-pill {
+        display: inline-block;
+        padding: 9px 14px;
+        border: 2px solid #d5dbe3;
+        border-radius: 999px;
+        background: var(--field);
+        font-size: 0.92rem;
+        cursor: pointer;
+      }
+
+      .note {
+        margin: 10px 0 0;
+        padding: 10px 12px;
+        border-left: 4px solid var(--gt-gold);
+        background: #f7f4ea;
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
+      /* ---------- AI status + badge ---------- */
+      .ai-status {
+        margin: 12px 0 0;
+        min-height: 1.4em;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .ai-badge {
+        margin: 0 0 16px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: #e3eaf2;
+        color: var(--gt-navy);
+        font-size: 0.92rem;
+        line-height: 1.4;
+      }
+
+      .link-button {
+        display: block;
+        margin-top: 12px;
+        padding: 0;
+        border: none;
+        background: none;
+        font: inherit;
+        font-size: 0.92rem;
+        color: var(--gt-navy);
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      .link-button:focus-visible {
+        outline: 3px solid var(--gt-gold);
+        outline-offset: 2px;
+      }
+
+      /* ---------- "Fill in the form" button ---------- */
+      .fill-button {
+        width: 100%;
+        margin-top: 14px;
+        padding: 13px;
+        font: inherit;
+        font-weight: 700;
+        color: var(--gt-navy);
+        background: var(--paper);
+        border: 2px solid var(--gt-navy);
+        border-radius: 10px;
+        cursor: pointer;
+      }
+
+      .fill-button:disabled {
+        color: #9aa6b4;
+        border-color: #c7cfd9;
+        cursor: not-allowed;
+      }
+
+      .fill-button:focus-visible {
+        outline: 3px solid var(--gt-gold);
+        outline-offset: 2px;
+      }
+
+      .section-title {
+        margin: 26px 0 14px;
+        padding-top: 18px;
+        border-top: 1px solid #e1e6ec;
+        font-size: 1.05rem;
+      }
+
       /* ---------- Inputs ---------- */
-      select, textarea {
+      select, textarea, input[type="text"] {
         width: 100%;
         font: inherit;
         padding: 12px;
@@ -162,7 +313,7 @@
 
       textarea { min-height: 100px; resize: vertical; }
 
-      select:focus-visible, textarea:focus-visible {
+      select:focus-visible, textarea:focus-visible, input[type="text"]:focus-visible {
         outline: 3px solid var(--gt-gold);
         outline-offset: 1px;
         border-color: var(--gt-navy);
@@ -210,8 +361,18 @@
     <main>
       <form id="report-form" novalidate>
 
+        <!-- STEP 1: Describe it (words carry the "what's wrong") -->
         <div class="field">
-          <span class="label">Photo</span>
+          <label for="report-text">What's wrong?</label>
+          <textarea
+            id="report-text"
+            placeholder="e.g. The water fountain on the 2nd floor of Klaus isn't working"
+          ></textarea>
+        </div>
+
+        <!-- Optional photo (helps identify the facility and any visible signs) -->
+        <div class="field">
+          <span class="label">Add a photo <span class="hint">(optional)</span></span>
           <input type="file" id="photo" accept="image/*" capture="environment" class="visually-hidden" />
           <label for="photo" class="photo-drop" id="photo-drop">
             <span>
@@ -227,24 +388,45 @@
             <button type="button" id="snap" class="camera-button">Take photo</button>
           </div>
           <canvas id="snapshot" hidden></canvas>
+
+          <p class="note">Keep people out of your photo. For restrooms, a photo of the sign or doorway is enough.</p>
         </div>
 
-        <div class="field">
-          <label for="location">Where is this?</label>
-          <select id="location">
-            <option value="">Choose a building</option>
-          </select>
-        </div>
+        <button type="button" class="fill-button" id="fill-button" disabled>Fill in the form for me</button>
+        <p class="ai-status" id="ai-status" role="status"></p>
+        <button type="button" class="link-button" id="manual-button">Skip, I'll fill it in myself</button>
 
-        <div class="field">
-          <label for="description">
-            What happened? <span class="hint">(optional)</span>
-          </label>
-          <textarea id="description" placeholder="e.g. The ramp by the side entrance is blocked by construction barriers."></textarea>
-        </div>
+        <!-- STEP 2: Details. The AI fills these in; the student checks and fixes them. -->
+        <div id="details" hidden>
+          <h2 class="section-title">Check the details</h2>
+          <p class="ai-badge" id="ai-badge" hidden></p>
 
-        <button type="submit" id="analyze" disabled>Analyze with AI</button>
-        <p class="status" id="status" role="status"></p>
+          <fieldset class="field">
+            <legend>What needs attention?</legend>
+            <div class="facility-grid" id="facility-options"></div>
+          </fieldset>
+
+          <fieldset class="field" id="issue-field" hidden>
+            <legend id="issue-legend">What's going on?</legend>
+            <div class="issue-list" id="issue-options"></div>
+            <p class="note" id="facility-note" hidden></p>
+          </fieldset>
+
+          <div class="field">
+            <label for="location">Which building?</label>
+            <select id="location">
+              <option value="">Choose a building</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="floor">Floor or spot <span class="hint">(optional)</span></label>
+            <input type="text" id="floor" placeholder="e.g. 2nd floor, by the stairs" />
+          </div>
+
+          <button type="submit" id="submit-button" disabled>Submit report</button>
+          <p class="status" id="status" role="status"></p>
+        </div>
 
       </form>
     </main>
@@ -254,6 +436,7 @@
 
     <script>
       // ---------- Buildings for the dropdown (coordinates are approximate) ----------
+      // KEEP IN SYNC with BUILDINGS in api/analyze.js: same ids in both files.
       const LOCATIONS = [
         { id: "klaus",          name: "Klaus Building",        lat: 33.7771, lng: -84.3963 },
         { id: "clough",         name: "Clough Commons",        lat: 33.7749, lng: -84.3964 },
@@ -263,6 +446,54 @@
         { id: "other",          name: "Other",                 lat: 33.7756, lng: -84.3963 },
       ];
 
+      // ---------- Facility types and their possible problems ----------
+      // KEEP IN SYNC with FACILITY_OPTIONS in api/analyze.js: same ids in both files.
+      // The facility ids (water, toilet, elevator) match the map's PIN_STYLES.
+      // severity "none" = a confirmation that something works, not a problem.
+      const FACILITIES = {
+        water: {
+          label: "Water fountain",
+          glyph: "💧",
+          issues: [
+            { id: "working",       label: "Working",                severity: "none" },
+            { id: "not_working",   label: "Not working",            severity: "medium" },
+            { id: "unfiltered",    label: "Filter needs replacing", severity: "low" },
+            { id: "low_pressure",  label: "Low water pressure",     severity: "low" },
+            { id: "too_high",      label: "Too high to reach",      severity: "medium" },
+            { id: "dirty",         label: "Dirty",                  severity: "low" },
+            { id: "other",         label: "Other",                  severity: "low" },
+          ],
+        },
+        elevator: {
+          label: "Elevator",
+          glyph: "🛗",
+          issues: [
+            { id: "working",        label: "Working",                   severity: "none" },
+            { id: "out_of_service", label: "Out of service / broken",   severity: "high" },
+            { id: "doors",          label: "Doors not working right",   severity: "high" },
+            { id: "buttons",        label: "Buttons or braille broken", severity: "medium" },
+            { id: "slow",           label: "Very slow",                 severity: "low" },
+            { id: "other",          label: "Other",                     severity: "medium" },
+          ],
+          note: "If someone is stuck in an elevator, call 911 or campus police first, then report it here.",
+        },
+        toilet: {
+          label: "Restroom",
+          glyph: "🚻",
+          issues: [
+            { id: "clean",           label: "Clean and working",        severity: "none" },
+            { id: "dirty",           label: "Dirty",                    severity: "low" },
+            { id: "out_of_supplies", label: "Out of supplies",          severity: "low" },
+            { id: "stall_blocked",   label: "Accessible stall blocked", severity: "high" },
+            { id: "grab_bar",        label: "Grab bar broken",          severity: "high" },
+            { id: "door",            label: "Door or lock broken",      severity: "medium" },
+            { id: "closed",          label: "Closed",                   severity: "medium" },
+            { id: "other",           label: "Other",                    severity: "low" },
+          ],
+          note: "For privacy, never photograph people in or near restrooms.",
+        },
+      };
+
       // ---------- Supabase setup (publishable key only, NEVER the secret key) ----------
       // Replace these two values with yours from Supabase → Project Settings → API Keys
       const SUPABASE_URL = "https://your-project-id.supabase.co";
@@ -270,9 +501,9 @@
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
       // Uploads a photo and returns its public URL.
-      // Not used yet: the Add to Map button (on the result screen) will call it.
+      // Not used yet: the Add to Map step will call it.
       async function uploadPhoto(file) {
-        const path = `reports/${Date.now()}.jpg`; // unique name using the current time
+        const path = `reports/${Date.now()}.jpg`;
 
         const { error } = await supabaseClient.storage
           .from("accessibility-reports")
@@ -289,12 +520,24 @@
 
       // ---------- Grab page elements ----------
       const form = document.getElementById("report-form");
+      const reportText = document.getElementById("report-text");
       const photoInput = document.getElementById("photo");
       const photoDrop = document.getElementById("photo-drop");
       const changePhoto = document.getElementById("change-photo");
+      const fillButton = document.getElementById("fill-button");
+      const aiStatus = document.getElementById("ai-status");
+      const manualButton = document.getElementById("manual-button");
+
+      const details = document.getElementById("details");
+      const aiBadge = document.getElementById("ai-badge");
+      const facilityOptions = document.getElementById("facility-options");
+      const issueField = document.getElementById("issue-field");
+      const issueLegend = document.getElementById("issue-legend");
+      const issueOptions = document.getElementById("issue-options");
+      const facilityNote = document.getElementById("facility-note");
       const locationSelect = document.getElementById("location");
-      const descriptionInput = document.getElementById("description");
-      const analyzeButton = document.getElementById("analyze");
+      const floorInput = document.getElementById("floor");
+      const submitButton = document.getElementById("submit-button");
       const statusText = document.getElementById("status");
 
       const openCameraButton = document.getElementById("open-camera");
@@ -303,16 +546,95 @@
       const snapButton = document.getElementById("snap");
       const canvas = document.getElementById("snapshot");
 
-      let selectedPhoto = null; // the photo, from the file input OR the camera
-      let stream = null;        // the live camera connection
+      // ---------- State: everything the page is keeping track of ----------
+      let selectedPhoto = null;     // the photo, from the file input OR the camera
+      let stream = null;            // the live camera connection
+      let selectedFacility = null;  // e.g. "elevator"
+      let selectedIssue = null;     // e.g. "out_of_service"
+      let aiResult = null;          // the AI's latest answer, saved with the report
+      let latestAnalysis = 0;       // counts analyses so we can ignore outdated answers
 
-      // ---------- Fill the dropdown ----------
+      // ---------- Fill the building dropdown ----------
       LOCATIONS.forEach((loc) => {
         const option = document.createElement("option");
         option.value = loc.id;
         option.textContent = loc.name;
         locationSelect.appendChild(option);
       });
+
+      // ---------- Build the facility cards from FACILITIES ----------
+      Object.entries(FACILITIES).forEach(([id, facility]) => {
+        const label = document.createElement("label");
+        label.className = "choice";
+
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = "facility"; // same name = only one can be picked
+        input.value = id;
+
+        const card = document.createElement("span");
+        card.className = "facility-card";
+
+        const glyph = document.createElement("span");
+        glyph.className = "glyph";
+        glyph.setAttribute("aria-hidden", "true");
+        glyph.textContent = facility.glyph;
+
+        const text = document.createElement("span");
+        text.textContent = facility.label;
+
+        card.append(glyph, text);
+        label.append(input, card);
+        facilityOptions.appendChild(label);
+
+        input.addEventListener("change", () => chooseFacility(id));
+      });
+
+      // ---------- Pick a facility: check its card and show ITS problems ----------
+      function chooseFacility(id) {
+        const facility = FACILITIES[id];
+        selectedFacility = id;
+        selectedIssue = null; // the old problem doesn't apply to the new facility
+
+        facilityOptions.querySelector(`input[value="${id}"]`).checked = true;
+
+        issueLegend.textContent = `What's going on with the ${facility.label.toLowerCase()}?`;
+        issueOptions.replaceChildren();
+
+        facility.issues.forEach((issue) => {
+          const label = document.createElement("label");
+          label.className = "choice";
+
+          const input = document.createElement("input");
+          input.type = "radio";
+          input.name = "issue";
+          input.value = issue.id;
+
+          const pill = document.createElement("span");
+          pill.className = "issue-pill";
+          pill.textContent = issue.label;
+
+          label.append(input, pill);
+          issueOptions.appendChild(label);
+
+          input.addEventListener("change", () => chooseIssue(issue.id));
+        });
+
+        facilityNote.hidden = !facility.note;
+        facilityNote.textContent = facility.note || "";
+
+        issueField.hidden = false;
+        updateButtons();
+      }
+
+      // ---------- Pick a problem ----------
+      function chooseIssue(id) {
+        const input = issueOptions.querySelector(`input[value="${id}"]`);
+        if (!input) return; // not a valid problem for this facility (e.g. "unclear")
+        input.checked = true;
+        selectedIssue = id;
+        updateButtons();
+      }
 
       // ---------- Use a photo (shared by both ways of getting one) ----------
       function usePhoto(file) {
@@ -322,69 +644,189 @@
         img.alt = "Selected photo preview";
         photoDrop.replaceChildren(img);
         changePhoto.hidden = false;
-        updateButton();
+        updateButtons();
       }
 
-      // Way 1: choosing a file (or the phone camera via capture)
       photoInput.addEventListener("change", () => {
         if (photoInput.files[0]) usePhoto(photoInput.files[0]);
       });
 
-      // Way 2: the webcam
       openCameraButton.addEventListener("click", async () => {
         try {
           stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" }, // rear camera if there is one
+            video: { facingMode: "environment" },
           });
           video.srcObject = stream;
           cameraBox.hidden = false;
           openCameraButton.hidden = true;
-          statusText.textContent = "";
+          aiStatus.textContent = "";
         } catch (error) {
-          statusText.textContent = "Camera isn't available. Choose a photo instead.";
+          aiStatus.textContent = "Camera isn't available. Choose a photo instead.";
         }
       });
 
       snapButton.addEventListener("click", () => {
-        // Freeze the current video frame onto the canvas
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext("2d").drawImage(video, 0, 0);
 
-        // Turn the canvas into an image file and use it like any other photo
         canvas.toBlob((blob) => {
           usePhoto(new File([blob], "camera-photo.jpg", { type: "image/jpeg" }));
         }, "image/jpeg", 0.85);
 
-        // Turn the camera (and its light) off
         stream.getTracks().forEach((track) => track.stop());
         cameraBox.hidden = true;
         openCameraButton.hidden = false;
       });
 
-      // ---------- Only enable Analyze when there's a photo and a building ----------
-      function updateButton() {
-        const hasPhoto = selectedPhoto !== null;
-        const hasLocation = locationSelect.value !== "";
-        analyzeButton.disabled = !(hasPhoto && hasLocation);
+      reportText.addEventListener("input", updateButtons);
+
+      // Skip the AI and fill everything in by hand
+      manualButton.addEventListener("click", () => {
+        details.hidden = false;
+        aiBadge.hidden = true;
+        manualButton.hidden = true;
+        facilityOptions.querySelector("input").focus();
+      });
+
+      // ---------- Shrink the photo before sending ----------
+      function resizePhoto(file, maxSize = 1024) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+            const resizeCanvas = document.createElement("canvas");
+            resizeCanvas.width = Math.round(img.width * scale);
+            resizeCanvas.height = Math.round(img.height * scale);
+            resizeCanvas.getContext("2d").drawImage(img, 0, 0, resizeCanvas.width, resizeCanvas.height);
+            resolve(resizeCanvas.toDataURL("image/jpeg", 0.8));
+          };
+          img.onerror = () => reject(new Error("Couldn't read that photo."));
+          img.src = URL.createObjectURL(file);
+        });
       }
 
-      locationSelect.addEventListener("change", updateButton);
+      // ---------- The AI step: read the words (and photo), then fill in the form ----------
+      fillButton.addEventListener("click", async () => {
+        latestAnalysis += 1;
+        const thisAnalysis = latestAnalysis;
+
+        fillButton.disabled = true;
+        fillButton.textContent = "Reading your report…";
+        aiStatus.textContent = "";
+
+        try {
+          const image = selectedPhoto ? await resizePhoto(selectedPhoto) : null;
+
+          const response = await fetch("/api/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: reportText.value.trim(),
+              image: image, // null when there's no photo
+            }),
+          });
+
+          const result = await response.json();
+          if (thisAnalysis !== latestAnalysis) return; // a newer request replaced this one
+
+          if (!response.ok) {
+            throw new Error(result.error || "Something went wrong.");
+          }
+
+          aiResult = result;
+          applyAIResult(result);
+        } catch (error) {
+          if (thisAnalysis !== latestAnalysis) return;
+          aiStatus.textContent = error.message + " You can fill in the details below.";
+          details.hidden = false;
+        } finally {
+          if (thisAnalysis === latestAnalysis) {
+            fillButton.textContent = "Fill in the form again";
+            updateButtons();
+          }
+        }
+      });
+
+      function applyAIResult(result) {
+        details.hidden = false;
+        manualButton.hidden = true;
+
+        // Facility and problem
+        if (FACILITIES[result.facility]) {
+          chooseFacility(result.facility);
+          chooseIssue(result.issue); // does nothing if the AI said "unclear"
+        }
+
+        // Building: only fill it in if the student hasn't already picked one
+        if (result.building !== "unknown" && locationSelect.value === "") {
+          locationSelect.value = result.building;
+        }
+
+        // Floor or spot: same rule, never overwrite what the student typed
+        if (result.floor && floorInput.value.trim() === "") {
+          floorInput.value = result.floor;
+        }
+
+        // Tell the student what we understood, and what's still missing
+        const missing = [];
+        if (!selectedFacility) missing.push("what needs attention");
+        if (!selectedIssue) missing.push("what's going on");
+        if (locationSelect.value === "") missing.push("the building");
+
+        aiBadge.textContent =
+          `Here's what we understood: ${result.summary} ` +
+          (missing.length
+            ? `Please add ${missing.join(" and ")} below.`
+            : "Check the details below and fix anything that's wrong.");
+        aiBadge.hidden = false;
+
+        updateButtons();
+      }
+
+      // ---------- Button states ----------
+      function updateButtons() {
+        // The AI needs something to work with: words, a photo, or both
+        const hasInput = reportText.value.trim() !== "" || selectedPhoto !== null;
+        if (fillButton.textContent !== "Reading your report…") {
+          fillButton.disabled = !hasInput;
+        }
+
+        submitButton.disabled = !(locationSelect.value !== "" && selectedFacility && selectedIssue);
+      }
+
+      locationSelect.addEventListener("change", updateButtons);
 
       // ---------- Submit ----------
       form.addEventListener("submit", (event) => {
-        event.preventDefault(); // stop the page from reloading
+        event.preventDefault();
+
+        const location = LOCATIONS.find((loc) => loc.id === locationSelect.value);
+        const facility = FACILITIES[selectedFacility];
+        const issue = facility.issues.find((i) => i.id === selectedIssue);
 
         const report = {
+          location: location,
+          floor: floorInput.value.trim(),
+          facility: selectedFacility,
+          issue: selectedIssue,
+          severity: issue.severity,
+          studentText: reportText.value.trim(), // exactly what the student wrote
+          summary: aiResult ? aiResult.summary : "",
           photo: selectedPhoto,
-          location: LOCATIONS.find((loc) => loc.id === locationSelect.value),
-          description: descriptionInput.value.trim(),
+          ai: aiResult,
+          // Did the student change the AI's answer? Useful for measuring accuracy.
+          correctedAI: aiResult
+            ? aiResult.facility !== selectedFacility ||
+              aiResult.issue !== selectedIssue ||
+              (aiResult.building !== "unknown" && aiResult.building !== locationSelect.value)
+            : null,
           createdAt: new Date().toISOString(),
         };
 
-        // PLACEHOLDER: Step 7 replaces this with a real call to /api/analyze
-        console.log("Report ready to send:", report);
-        statusText.textContent = "Report ready. AI analysis is coming in the next step.";
+        // PLACEHOLDER: next step turns this into a pin on the map (Add to Map)
+        console.log("Report ready:", report);
+        statusText.textContent = `Report ready: ${facility.label}, ${issue.label.toLowerCase()}, at ${location.name}.`;
       });
     </script>
   </body>
