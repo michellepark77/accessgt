@@ -264,9 +264,8 @@
       ];
 
       // ---------- Supabase setup (publishable key only, NEVER the secret key) ----------
-      // Replace these two values with yours from Supabase → Project Settings → API Keys
-      const SUPABASE_URL = "https://your-project-id.supabase.co";
-      const SUPABASE_KEY = "sb_publishable_...";
+      const SUPABASE_URL = "%VITE_SUPABASE_URL%";
+      const SUPABASE_KEY = "%VITE_SUPABASE_PUBLISHABLE_KEY%";
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
       // Uploads a photo and returns its public URL.
