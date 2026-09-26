@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Report an issue — AccessGT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet" />
+
+    <style>
+      /* ---------- Design tokens (shared with index.html) ---------- */
+      :root {
+        --gt-navy: #003057;
+        --gt-gold: #b3a369;
+        --paper: #ffffff;
+        --ink: #1a2433;
+        --muted: #5b6878;
+        --field: #f3f5f8;
+        --font: "Atkinson Hyperlegible", system-ui, -apple-system, sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: var(--font);
+        color: var(--ink);
+        background: #e9edf2;
+      }
+
+      /* ---------- Header ---------- */
+      header {
+        background: var(--gt-navy);
+        color: var(--paper);
+        padding: 14px 20px;
+        border-bottom: 4px solid var(--gt-gold);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      header a {
+        color: var(--paper);
+        text-decoration: none;
+        font-size: 1.4rem;
+        line-height: 1;
+        padding: 4px 8px;
+        border-radius: 8px;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 1.25rem;
+      }
+
+      /* ---------- Form layout ---------- */
+      main {
+        max-width: 480px;
+        margin: 24px auto;
+        padding: 0 16px 40px;
+      }
+
+      form {
+        background: var(--paper);
+        border-radius: 14px;
+        padding: 22px;
+        box-shadow: 0 6px 24px rgba(0, 48, 87, 0.12);
+      }
+
+      .field { margin-bottom: 22px; }
+
+      .field > label,
+      .field > .label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .hint {
+        font-weight: 400;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      /* ---------- Photo picker ---------- */
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+
+      .photo-drop {
+        display: grid;
+        place-items: center;
+        min-height: 200px;
+        border: 2px dashed #b9c3cf;
+        border-radius: 12px;
+        background: var(--field);
+        cursor: pointer;
+        text-align: center;
+        color: var(--muted);
+        overflow: hidden;
+      }
+
+      .photo-drop .icon { font-size: 2.2rem; display: block; margin-bottom: 6px; }
+
+      .photo-drop img {
+        width: 100%;
+        max-height: 320px;
+        object-fit: cover;
+        display: block;
+      }
+
+      #photo:focus-visible + .photo-drop {
+        outline: 3px solid var(--gt-gold);
+        outline-offset: 2px;
+      }
+
+      .change-photo {
+        margin-top: 8px;
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      /* ---------- Camera (NEW) ---------- */
+      .camera-button {
+        margin-top: 10px;
+        padding: 10px 14px;
+        font: inherit;
+        font-weight: 700;
+        color: var(--gt-navy);
+        background: var(--paper);
+        border: 2px solid var(--gt-navy);
+        border-radius: 10px;
+        cursor: pointer;
+      }
+
+      .camera-button:focus-visible {
+        outline: 3px solid var(--gt-gold);
+        outline-offset: 2px;
+      }
+
+      #camera video {
+        width: 100%;
+        margin-top: 10px;
+        border-radius: 12px;
+        background: #000;
+      }
+
+      /* ---------- Inputs ---------- */
+      select, textarea {
+        width: 100%;
+        font: inherit;
+        padding: 12px;
+        border: 2px solid #d5dbe3;
+        border-radius: 10px;
+        background: var(--field);
+        color: var(--ink);
+      }
+
+      textarea { min-height: 100px; resize: vertical; }
+
+      select:focus-visible, textarea:focus-visible {
+        outline: 3px solid var(--gt-gold);
+        outline-offset: 1px;
+        border-color: var(--gt-navy);
+      }
+
+      /* ---------- Submit ---------- */
+      button[type="submit"] {
+        width: 100%;
+        padding: 14px;
+        font: inherit;
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: var(--paper);
+        background: var(--gt-navy);
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+
+      button[type="submit"]:disabled {
+        background: #9aa6b4;
+        cursor: not-allowed;
+      }
+
+      button[type="submit"]:focus-visible {
+        outline: 3px solid var(--gt-gold);
+        outline-offset: 2px;
+      }
+
+      .status {
+        margin-top: 12px;
+        min-height: 1.4em;
+        color: var(--muted);
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <a href="index.html" aria-label="Back to map">←</a>
+      <h1>Report an issue on campus</h1>
+    </header>
+
+    <main>
+      <form id="report-form" novalidate>
+
+        <div class="field">
+          <span class="label">Photo</span>
+          <input type="file" id="photo" accept="image/*" capture="environment" class="visually-hidden" />
+          <label for="photo" class="photo-drop" id="photo-drop">
+            <span>
+              <span class="icon" aria-hidden="true">📷</span>
+              Take or choose a photo
+            </span>
+          </label>
+          <p class="change-photo" id="change-photo" hidden>Tap the photo to change it.</p>
+
+          <button type="button" id="open-camera" class="camera-button">📸 Use camera</button>
+          <div id="camera" hidden>
+            <video id="camera-video" autoplay playsinline muted></video>
+            <button type="button" id="snap" class="camera-button">Take photo</button>
+          </div>
+          <canvas id="snapshot" hidden></canvas>
+        </div>
+
+        <div class="field">
+          <label for="location">Where is this?</label>
+          <select id="location">
+            <option value="">Choose a building</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="description">
+            What happened? <span class="hint">(optional)</span>
+          </label>
+          <textarea id="description" placeholder="e.g. The ramp by the side entrance is blocked by construction barriers."></textarea>
+        </div>
+
+        <button type="submit" id="analyze" disabled>Analyze with AI</button>
+        <p class="status" id="status" role="status"></p>
+
+      </form>
+    </main>
+
+    <!-- Supabase library. Must come BEFORE the script below. -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+      // ---------- Buildings for the dropdown (coordinates are approximate) ----------
+      const LOCATIONS = [
+        { id: "klaus",          name: "Klaus Building",        lat: 33.7771, lng: -84.3963 },
+        { id: "clough",         name: "Clough Commons",        lat: 33.7749, lng: -84.3964 },
+        { id: "library",        name: "Price Gilbert Library", lat: 33.7743, lng: -84.3957 },
+        { id: "student_center", name: "Student Center",        lat: 33.7738, lng: -84.3988 },
+        { id: "coda",           name: "Coda",                  lat: 33.7765, lng: -84.3880 },
+        { id: "other",          name: "Other",                 lat: 33.7756, lng: -84.3963 },
+      ];
+
+      // ---------- Supabase setup (publishable key only, NEVER the secret key) ----------
+      // Replace these two values with yours from Supabase → Project Settings → API Keys
+      const SUPABASE_URL = "https://your-project-id.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_...";
+      const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      // Uploads a photo and returns its public URL.
+      // Not used yet: the Add to Map button (on the result screen) will call it.
+      async function uploadPhoto(file) {
+        const path = `reports/${Date.now()}.jpg`; // unique name using the current time
+
+        const { error } = await supabaseClient.storage
+          .from("accessibility-reports")
+          .upload(path, file, { contentType: "image/jpeg" });
+
+        if (error) throw error;
+
+        const { data } = supabaseClient.storage
+          .from("accessibility-reports")
+          .getPublicUrl(path);
+
+        return data.publicUrl;
+      }
+
+      // ---------- Grab page elements ----------
+      const form = document.getElementById("report-form");
+      const photoInput = document.getElementById("photo");
+      const photoDrop = document.getElementById("photo-drop");
+      const changePhoto = document.getElementById("change-photo");
+      const locationSelect = document.getElementById("location");
+      const descriptionInput = document.getElementById("description");
+      const analyzeButton = document.getElementById("analyze");
+      const statusText = document.getElementById("status");
+
+      const openCameraButton = document.getElementById("open-camera");
+      const cameraBox = document.getElementById("camera");
+      const video = document.getElementById("camera-video");
+      const snapButton = document.getElementById("snap");
+      const canvas = document.getElementById("snapshot");
+
+      let selectedPhoto = null; // the photo, from the file input OR the camera
+      let stream = null;        // the live camera connection
+
+      // ---------- Fill the dropdown ----------
+      LOCATIONS.forEach((loc) => {
+        const option = document.createElement("option");
+        option.value = loc.id;
+        option.textContent = loc.name;
+        locationSelect.appendChild(option);
+      });
+
+      // ---------- Use a photo (shared by both ways of getting one) ----------
+      function usePhoto(file) {
+        selectedPhoto = file;
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(file);
+        img.alt = "Selected photo preview";
+        photoDrop.replaceChildren(img);
+        changePhoto.hidden = false;
+        updateButton();
+      }
+
+      // Way 1: choosing a file (or the phone camera via capture)
+      photoInput.addEventListener("change", () => {
+        if (photoInput.files[0]) usePhoto(photoInput.files[0]);
+      });
+
+      // Way 2: the webcam
+      openCameraButton.addEventListener("click", async () => {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" }, // rear camera if there is one
+          });
+          video.srcObject = stream;
+          cameraBox.hidden = false;
+          openCameraButton.hidden = true;
+          statusText.textContent = "";
+        } catch (error) {
+          statusText.textContent = "Camera isn't available. Choose a photo instead.";
+        }
+      });
+
+      snapButton.addEventListener("click", () => {
+        // Freeze the current video frame onto the canvas
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext("2d").drawImage(video, 0, 0);
+
+        // Turn the canvas into an image file and use it like any other photo
+        canvas.toBlob((blob) => {
+          usePhoto(new File([blob], "camera-photo.jpg", { type: "image/jpeg" }));
+        }, "image/jpeg", 0.85);
+
+        // Turn the camera (and its light) off
+        stream.getTracks().forEach((track) => track.stop());
+        cameraBox.hidden = true;
+        openCameraButton.hidden = false;
+      });
+
+      // ---------- Only enable Analyze when there's a photo and a building ----------
+      function updateButton() {
+        const hasPhoto = selectedPhoto !== null;
+        const hasLocation = locationSelect.value !== "";
+        analyzeButton.disabled = !(hasPhoto && hasLocation);
+      }
+
+      locationSelect.addEventListener("change", updateButton);
+
+      // ---------- Submit ----------
+      form.addEventListener("submit", (event) => {
+        event.preventDefault(); // stop the page from reloading
+
+        const report = {
+          photo: selectedPhoto,
+          location: LOCATIONS.find((loc) => loc.id === locationSelect.value),
+          description: descriptionInput.value.trim(),
+          createdAt: new Date().toISOString(),
+        };
+
+        // PLACEHOLDER: Step 7 replaces this with a real call to /api/analyze
+        console.log("Report ready to send:", report);
+        statusText.textContent = "Report ready. AI analysis is coming in the next step.";
+      });
+    </script>
+  </body>
+</html>
