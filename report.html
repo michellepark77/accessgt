@@ -249,6 +249,9 @@
       </form>
     </main>
 
+    <!-- Supabase library. Must come BEFORE the script below. -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
       // ---------- Buildings for the dropdown (coordinates are approximate) ----------
       const LOCATIONS = [
@@ -259,6 +262,30 @@
         { id: "coda",           name: "Coda",                  lat: 33.7765, lng: -84.3880 },
         { id: "other",          name: "Other",                 lat: 33.7756, lng: -84.3963 },
       ];
+
+      // ---------- Supabase setup (publishable key only, NEVER the secret key) ----------
+      // Replace these two values with yours from Supabase → Project Settings → API Keys
+      const SUPABASE_URL = "https://your-project-id.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_...";
+      const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      // Uploads a photo and returns its public URL.
+      // Not used yet: the Add to Map button (on the result screen) will call it.
+      async function uploadPhoto(file) {
+        const path = `reports/${Date.now()}.jpg`; // unique name using the current time
+
+        const { error } = await supabaseClient.storage
+          .from("accessibility-reports")
+          .upload(path, file, { contentType: "image/jpeg" });
+
+        if (error) throw error;
+
+        const { data } = supabaseClient.storage
+          .from("accessibility-reports")
+          .getPublicUrl(path);
+
+        return data.publicUrl;
+      }
 
       // ---------- Grab page elements ----------
       const form = document.getElementById("report-form");
