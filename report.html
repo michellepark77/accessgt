@@ -388,6 +388,7 @@
             <button type="button" id="snap" class="camera-button">Take photo</button>
           </div>
           <canvas id="snapshot" hidden></canvas>
+          <p class="ai-status" id="photo-status" role="status"></p>
 
           <p class="note">Keep people out of your photo. For restrooms, a photo of the sign or doorway is enough.</p>
         </div>
@@ -495,13 +496,13 @@
       };
 
       // ---------- Supabase setup (publishable key only, NEVER the secret key) ----------
-      // Replace these two values with yours from Supabase → Project Settings → API Keys
-      const SUPABASE_URL = "https://your-project-id.supabase.co";
-      const SUPABASE_KEY = "sb_publishable_...";
+      // Vite fills these in from VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY
+      // (in .env.local for local testing, and in Vercel's Environment Variables for the live site)
+      const SUPABASE_URL = "%VITE_SUPABASE_URL%";
+      const SUPABASE_KEY = "%VITE_SUPABASE_PUBLISHABLE_KEY%";
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      // Uploads a photo and returns its public URL.
-      // Not used yet: the Add to Map step will call it.
+      // Uploads a photo and returns its public URL (used when a report is submitted)
       async function uploadPhoto(file) {
         const path = `reports/${Date.now()}.jpg`;
 
@@ -545,6 +546,13 @@
       const video = document.getElementById("camera-video");
       const snapButton = document.getElementById("snap");
       const canvas = document.getElementById("snapshot");
+      const photoStatus = document.getElementById("photo-status");
+
+      // Phones and tablets: the photo box already opens the built-in camera app,
+      // which is more reliable than a live camera inside the page (especially on iPhone).
+      // So the live "Use camera" button is only shown on laptops and desktops.
+      const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+      if (isTouchDevice) openCameraButton.hidden = true;
 
       // ---------- State: everything the page is keeping track of ----------
       let selectedPhoto = null;     // the photo, from the file input OR the camera
@@ -644,11 +652,15 @@
         img.alt = "Selected photo preview";
         photoDrop.replaceChildren(img);
         changePhoto.hidden = false;
+        photoStatus.textContent = "Photo added.";
         updateButtons();
       }
 
       photoInput.addEventListener("change", () => {
-        if (photoInput.files[0]) usePhoto(photoInput.files[0]);
+        const file = photoInput.files[0];
+        if (!file) return; // the student cancelled the camera or picker
+        usePhoto(file);
+        photoInput.value = ""; // reset, so picking the same photo again still counts as a change
       });
 
       openCameraButton.addEventListener("click", async () => {
@@ -657,26 +669,39 @@
             video: { facingMode: "environment" },
           });
           video.srcObject = stream;
+          await video.play(); // some browsers need an explicit start, not just autoplay
           cameraBox.hidden = false;
           openCameraButton.hidden = true;
-          aiStatus.textContent = "";
+          photoStatus.textContent = "";
         } catch (error) {
-          aiStatus.textContent = "Camera isn't available. Choose a photo instead.";
+          photoStatus.textContent = "Camera isn't available. Tap the photo box to choose a photo instead.";
         }
       });
 
       snapButton.addEventListener("click", () => {
+        // On some phones the video needs a moment before it has a real picture.
+        // A width of 0 means there's no frame yet, which would make an empty photo.
+        if (!video.videoWidth) {
+          photoStatus.textContent = "The camera is still starting. Try again in a second.";
+          return;
+        }
+
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext("2d").drawImage(video, 0, 0);
 
         canvas.toBlob((blob) => {
+          if (!blob) {
+            photoStatus.textContent = "Couldn't capture that photo. Try again, or tap the photo box instead.";
+            return; // keep the camera on so they can retry
+          }
           usePhoto(new File([blob], "camera-photo.jpg", { type: "image/jpeg" }));
-        }, "image/jpeg", 0.85);
 
-        stream.getTracks().forEach((track) => track.stop());
-        cameraBox.hidden = true;
-        openCameraButton.hidden = false;
+          // Only turn the camera off once we actually have the photo
+          stream.getTracks().forEach((track) => track.stop());
+          cameraBox.hidden = true;
+          openCameraButton.hidden = isTouchDevice;
+        }, "image/jpeg", 0.85);
       });
 
       reportText.addEventListener("input", updateButtons);
@@ -797,36 +822,67 @@
 
       locationSelect.addEventListener("change", updateButtons);
 
-      // ---------- Submit ----------
-      form.addEventListener("submit", (event) => {
+      // ---------- Submit: save the report to Supabase ----------
+      // Each report becomes one row in the "reports" table.
+      // The photo goes in Storage, and the row keeps its link (photo_url).
+      form.addEventListener("submit", async (event) => {
         event.preventDefault();
 
         const location = LOCATIONS.find((loc) => loc.id === locationSelect.value);
         const facility = FACILITIES[selectedFacility];
         const issue = facility.issues.find((i) => i.id === selectedIssue);
 
-        const report = {
-          location: location,
-          floor: floorInput.value.trim(),
-          facility: selectedFacility,
-          issue: selectedIssue,
-          severity: issue.severity,
-          studentText: reportText.value.trim(), // exactly what the student wrote
-          summary: aiResult ? aiResult.summary : "",
-          photo: selectedPhoto,
-          ai: aiResult,
-          // Did the student change the AI's answer? Useful for measuring accuracy.
-          correctedAI: aiResult
-            ? aiResult.facility !== selectedFacility ||
-              aiResult.issue !== selectedIssue ||
-              (aiResult.building !== "unknown" && aiResult.building !== locationSelect.value)
-            : null,
-          createdAt: new Date().toISOString(),
-        };
+        submitButton.disabled = true;
+        submitButton.textContent = "Saving…";
+        statusText.textContent = "";
 
-        // PLACEHOLDER: next step turns this into a pin on the map (Add to Map)
-        console.log("Report ready:", report);
-        statusText.textContent = `Report ready: ${facility.label}, ${issue.label.toLowerCase()}, at ${location.name}.`;
+        try {
+          // 1. Upload the photo, shrunk first so it stays small (optional)
+          let photoUrl = null;
+          if (selectedPhoto) {
+            try {
+              const resized = await resizePhoto(selectedPhoto);
+              const blob = await (await fetch(resized)).blob(); // data URL → file data
+              photoUrl = await uploadPhoto(blob);
+            } catch (photoError) {
+              // Tag photo problems so the message below can say exactly what failed
+              photoError.step = "photo";
+              throw photoError;
+            }
+          }
+
+          // 2. Save one row. These names must match the table's column names exactly.
+          const { error } = await supabaseClient.from("reports").insert({
+            building: location.id,
+            lat: location.lat,
+            lng: location.lng,
+            floor: floorInput.value.trim(),
+            facility: selectedFacility,
+            issue: selectedIssue,
+            severity: issue.severity,
+            student_text: reportText.value.trim(),
+            summary: aiResult ? aiResult.summary : "",
+            photo_url: photoUrl,
+            ai_confidence: aiResult ? aiResult.confidence : null,
+            // Did the student change the AI's answer? Useful for measuring accuracy.
+            corrected_ai: aiResult
+              ? aiResult.facility !== selectedFacility || aiResult.issue !== selectedIssue
+              : null,
+          });
+
+          if (error) throw error;
+
+          statusText.textContent = `Saved! ${facility.label}, ${issue.label.toLowerCase()}, at ${location.name}.`;
+          submitButton.textContent = "Submitted";
+        } catch (error) {
+          console.error(error.step === "photo" ? "Photo upload failed:" : "Save failed:", error);
+          statusText.textContent =
+            error.step === "photo"
+              ? `The photo couldn't be uploaded (${error.message}). Remove it or try again.`
+              : "Couldn't save the report. Check your connection and try again.";
+          submitButton.textContent = "Submit report";
+          submitButton.disabled = false;
+        }
       });
     </script>
   </body>

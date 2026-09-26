@@ -1,6 +1,16 @@
+// api/analyze.js  (Gemini version, uses Google's free tier)
+// Uses "export default" because this project's package.json has "type": "module".
+// This runs on the SERVER (Vercel), never in the browser,
+// so it's the only safe place to use GEMINI_API_KEY.
 
+// First model is preferred; the rest are backups if it's overloaded.
+// Check each ID is available on your free tier in AI Studio.
 const MODELS = ["gemini-3.8-flash", "gemini-3.6-flash"];
 
+// ---------------------------------------------------------------------
+// Buildings. KEEP IN SYNC with LOCATIONS in report.html (same ids).
+// "Also called" helps the AI understand nicknames students actually use.
+// ---------------------------------------------------------------------
 const BUILDINGS = {
   klaus: "Klaus Building (also called Klaus, Klaus Advanced Computing)",
   clough: "Clough Commons (also called Clough, CULC, Clough Undergraduate Learning Commons)",
@@ -10,6 +20,9 @@ const BUILDINGS = {
   other: "Somewhere else on campus that isn't listed",
 };
 
+// ---------------------------------------------------------------------
+// Facilities and problems. KEEP IN SYNC with FACILITIES in report.html.
+// ---------------------------------------------------------------------
 const FACILITY_OPTIONS = {
   water: {
     label: "Water fountain or bottle filler",
@@ -49,6 +62,7 @@ const FACILITY_OPTIONS = {
   },
 };
 
+// Turn the lists above into readable text for the prompt
 const buildingsText = Object.entries(BUILDINGS)
   .map(([id, name]) => `- ${id}: ${name}`)
   .join("\n");
@@ -62,8 +76,10 @@ const facilitiesText = Object.entries(FACILITY_OPTIONS)
   })
   .join("\n");
 
-//the prompt
-const SYSTEM_PROMPT = `You are an AI agent that helps students fill out reports on the condition of resources on campus.
+// ---------------------------------------------------------------------
+// STEP 8: The prompt
+// ---------------------------------------------------------------------
+const SYSTEM_PROMPT = `You help Georgia Tech students report problems with campus accessibility facilities.
 
 A student describes a problem in their own words, and may include a photo. Turn their report into form fields.
 
@@ -74,7 +90,7 @@ Buildings (use these exact ids):
 ${buildingsText}
 
 Where each answer should come from:
-- The problem comes mainly from the student's WORDS. Many problems, like a fountain with no water or a broken elevator, cannot be seen in a photo.
+- The problem (issue) comes mainly from the student's WORDS. Many problems, like a fountain with no water or a broken elevator, cannot be seen in a photo.
 - From a photo, only use visible evidence: an "out of order" sign, caution tape or barriers, an indicator light, visible dirt or damage, or a readable building sign.
 - Never choose "working" or "clean" unless the student says it works.
 - If the student's words and the photo disagree, trust the words.
@@ -88,8 +104,11 @@ Writing the summary:
 - Only include details the student gave or the photo clearly shows. Do not invent anything.
 - If people appear in the photo, do not describe them.
 
-Confidence is your own estimate on a scale of 1 to 10 of how sure you are about the facility and problem together.`;
+Confidence is your own estimate from 0 to 1 of how sure you are about the facility and problem together.`;
 
+// ---------------------------------------------------------------------
+// STEP 9: The exact JSON shape the AI must return
+// ---------------------------------------------------------------------
 const allIssueIds = [
   ...new Set(Object.values(FACILITY_OPTIONS).flatMap((f) => Object.keys(f.issues))),
 ];
@@ -178,6 +197,7 @@ export default async function handler(req, res) {
     const mimeType = header.slice("data:".length, header.indexOf(";"));
     parts.push({ inline_data: { mime_type: mimeType, data: base64Data } });
   }
+
   const requestBody = {
     systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
     contents: [{ role: "user", parts: parts }],
