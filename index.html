@@ -2,6 +2,9 @@
 <html>
   <head>
     <title>GT Accessibility Map Prototype</title>
+    
+    <link rel="stylesheet" href="./styles.css" />
+    
     <style>
       #map {
         height: 100vh;
@@ -13,9 +16,75 @@
         height: 100%;
       }
     </style>
+   
+
+
   </head>
   <body>
+
+    <!-- adding a header -->
+         <header class="app-header">
+      <div class="header-brand-group">
+        <div class="brand">
+          <img
+            src="/images/mermaid_tail_wave.png"
+            class="brand-icon"
+            alt=""
+          />
+          <span class="brand-name">TITLE</span>
+        </div>
+
+        <p class="tagline">Campus access, made clearer.</p>
+      </div>
+    </header>
+
+  <div class = "page-content">
+    <!-- Demo notice -->
+    <div class="demo-banner">
+      <strong>Prototype</strong> Demo reports only
+    </div>
+
+    <!-- Sidebar and map -->
+    <main class="app-layout">
+      <aside class="sidebar">
+        <!-- Mermaid guide -->
+        <div class="mascot-guide">
+          <img
+            src="/images/nerd_mermaid_mascot.png"
+            class="guide-mascot"
+            alt="Friendly mermaid guide wearing glasses"
+          />
+
+          <div class="guide-bubble">
+            <p>Where are we heading today?</p>
+          </div>
+        </div>
+
+        <h1>Explore campus</h1>
+
+        <p class="intro">
+         Find access points and view reported barriers
+        </p>
+      </aside>
+
+      <section class="map-panel" aria-label="Campus map">
+        <!-- Heading and decoration -->
+        <div class="map-header">
+          <h2>Campus Explorer</h2>
+
+          <img
+            src="/images/castle_bottom_img.png"
+            class="campus-decoration"
+            alt=""
+          />
+        </div>
     <div id="map"></div>
+     <div class="map-legend">
+          <span>Map pins show sample accessibility barriers.</span>
+        </div>
+      </section>
+    </main>
+</div>
 
     <script>
       // 1. Hard-coded mock data centered around Georgia Tech campus
@@ -67,3 +136,11 @@ src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBLsAXmkL_jNvSm5VNsSgISZqI
 async
 defer
 ></script>
+
+<footer class="app-footer">
+  <p>Touch Grass | Campus Accessibility Explorer</p>
+</footer>
+
+
+</body>
+</html>
