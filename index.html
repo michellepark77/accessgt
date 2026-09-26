@@ -145,7 +145,11 @@
                   placeholder="What should others know?"
                 ></textarea>
 
-                <button type="button" class="quick-submit">
+                <button 
+                    type="button" 
+                    class="quick-submit"
+                    id="add-place-submit"
+                    >
                   Add Pin
                 </button>
 
@@ -180,7 +184,11 @@
                     placeholder="What should others know?"
                   ></textarea>
 
-                  <button type="button" class="quick-submit">
+                  <button 
+                      type="button"
+                      class="quick-submit"
+                      id="rate-place-submit"
+                       >
                     Submit Rating
                   </button>
 
@@ -214,6 +222,15 @@
 </div>
 
     <script>
+
+          const SUPABASE_URL = "%VITE_SUPABASE_URL%";
+          const SUPABASE_KEY = "%VITE_SUPABASE_PUBLISHABLE_KEY%";
+
+          const supabaseClient =
+            supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+
+
       // 1. Hard-coded mock data centered around Georgia Tech campus
       const issues = [
         { id: 1, type: "Blocked Ramp", lat: 33.7756, lng: -84.3963, desc: "Construction equipment blocking sidewalk ramp near Tech Tower." },
@@ -269,10 +286,26 @@ defer
 
 
 <footer class="app-footer">
-  <p>Touch Grass | Campus Accessibility Explorer |contact@gmail.com </p>
+  <p>Touch Grass | Campus Accessibility Explorer | contact@gmail.com </p>
 </footer>
 
+
+
+<!-- Supabase library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
+  const SUPABASE_URL = "%VITE_SUPABASE_URL%";
+  const SUPABASE_KEY = "%VITE_SUPABASE_PUBLISHABLE_KEY%";
+
+  const supabaseClient =
+    supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  console.log("Supabase client created:", supabaseClient);
+
+  // all your existing JS starts below here
+
+
   const addPlaceBtn = document.getElementById("add-place-btn");
   const ratePlaceBtn = document.getElementById("rate-place-btn");
 
@@ -294,6 +327,130 @@ defer
     ratePlaceBtn.classList.add("active");
     addPlaceBtn.classList.remove("active");
   });
+
+let addPlaceRating = null;
+let existingPlaceRating = null;
+
+const addRatingButtons =
+  document.querySelectorAll("#add-place-form .rating-row button");
+
+addRatingButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    addPlaceRating = Number(button.textContent);
+
+    addRatingButtons.forEach((btn) => {
+      btn.classList.remove("selected");
+    });
+
+    button.classList.add("selected");
+  });
+});
+
+const existingRatingButtons =
+  document.querySelectorAll("#rate-place-form .rating-row button");
+
+existingRatingButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    existingPlaceRating = Number(button.textContent);
+
+    existingRatingButtons.forEach((btn) => {
+      btn.classList.remove("selected");
+    });
+
+    button.classList.add("selected");
+  });
+});
+document
+  .getElementById("add-place-submit")
+  .addEventListener("click", async () => {
+
+    const name =
+      document.getElementById("place-name").value.trim();
+
+    const address =
+      document.getElementById("place-address").value.trim();
+
+    const type =
+      document.getElementById("place-type").value;
+
+    const note =
+      document.getElementById("place-note").value.trim();
+
+    if (!name || !address || !type || !addPlaceRating) {
+      alert("Please fill out the required fields.");
+      return;
+    }
+
+    //  geocode next
+   const geocoder = new google.maps.Geocoder();
+
+
+console.log("Trying to geocode:", address);
+geocoder.geocode(
+  { address: address },
+  async (results, status) => {
+
+        if (status !== "OK" || !results[0]) {
+      console.error("Address sent:", address);
+      console.error("Geocoder status:", status);
+      console.error("Results:", results);
+
+      alert("Geocoding failed: " + status);
+      return;
+    } 
+
+    const location = results[0].geometry.location;
+
+    const lat = location.lat();
+    const lng = location.lng();
+
+    console.log("Latitude:", lat);
+    console.log("Longitude:", lng);
+
+    // STEP 6: Supabase insert
+      const { data: place, error: placeError } =
+  await supabaseClient
+    .from("places")
+    .insert({
+      name: name,
+      address: address,
+      type: type,
+      lat: lat,
+      lng: lng
+    })
+    .select()
+    .single();
+
+if (placeError) {
+  console.error(placeError);
+  alert("Couldn't save the place.");
+  return;
+}
+const { error: ratingError } =
+  await supabaseClient
+    .from("place_ratings")
+    .insert({
+      place_id: place.id,
+      rating: addPlaceRating,
+      note: note
+    });
+
+if (ratingError) {
+  console.error(ratingError);
+  alert("Place saved, but the rating couldn't be saved.");
+  return;
+}
+
+alert("Place added!");
+  }
+);
+
+
+  });
+
+
+
+
 </script>
 </body>
 </html>

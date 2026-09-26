@@ -1087,3 +1087,9 @@ button:disabled {
 .hidden {
   display: none;
 }
+
+.rating-row button.selected {
+  background: var(--ocean);
+  color: white;
+}
+
