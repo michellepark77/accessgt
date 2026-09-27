@@ -1,4 +1,3 @@
-
 const MODELS = ["gemini-3.8-flash", "gemini-3.6-flash"];
 
 const BUILDINGS = {
@@ -49,7 +48,6 @@ const FACILITY_OPTIONS = {
   },
 };
 
-// Turn the lists above into readable text for the prompt
 const buildingsText = Object.entries(BUILDINGS)
   .map(([id, name]) => `- ${id}: ${name}`)
   .join("\n");
@@ -123,10 +121,8 @@ const RESULT_SCHEMA = {
   ],
 };
 
-// Wait for a number of milliseconds
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Ask Gemini, retrying once and then trying backup models if one is busy
 async function askGemini(requestBody) {
   let lastError = null;
 
@@ -145,23 +141,23 @@ async function askGemini(requestBody) {
       );
 
       const data = await response.json();
-      if (response.ok) return data; // pass
+      if (response.ok) return data;
 
       console.error(`Gemini error (${model}, attempt ${attempt}):`, JSON.stringify(data, null, 2));
       lastError = { status: response.status };
 
       if (response.status === 503 && attempt === 1) {
-        await wait(1500); // overloaded
+        await wait(1500);
         continue;
       }
       if (response.status === 503 || response.status === 429 || response.status === 404) {
-        break; // move onto next model
+        break;
       }
       throw lastError;
     }
   }
 
-  throw lastError; // every model failed
+  throw lastError;
 }
 
 export default async function handler(req, res) {
@@ -178,17 +174,14 @@ export default async function handler(req, res) {
   const studentText = typeof text === "string" ? text.trim().slice(0, 1000) : "";
   const hasImage = typeof image === "string" && image.startsWith("data:image/");
 
-  // The AI needs at least one thing to work with
   if (!studentText && !hasImage) {
     return res.status(400).json({ error: "Describe the problem or add a photo first." });
   }
 
-  // Build the import
   const parts = [
     { text: `Student's report: ${studentText || "(No text. Use the photo only.)"}` },
   ];
 
-  // If the student answered a follow-up question, include it in AI import
   const hasAnswer = typeof followUpQuestion === "string" && typeof followUpAnswer === "string";
   if (hasAnswer) {
     parts.push({
@@ -197,7 +190,6 @@ export default async function handler(req, res) {
   }
 
   if (hasImage) {
-    // aggregating import pieces
     const [header, base64Data] = image.split(",");
     const mimeType = header.slice("data:".length, header.indexOf(";"));
     parts.push({ inline_data: { mime_type: mimeType, data: base64Data } });
@@ -223,16 +215,13 @@ export default async function handler(req, res) {
 
     const result = JSON.parse(replyText);
 
-    // Keep confidence between 0 and 1
     result.confidence = Math.min(1, Math.max(0, Number(result.confidence) || 0));
 
-    //statement must belong to issue
     const facility = FACILITY_OPTIONS[result.facility];
     if (!facility || !(result.issue in facility.issues)) {
       result.issue = "unclear";
     }
 
-    // 3. If the AI isn't confident, treat the problem as unconfident
     if (result.confidence < 0.5 && !hasAnswer) {
       result.issue = "unclear";
     }
@@ -243,11 +232,9 @@ export default async function handler(req, res) {
       result.follow_up_question = "";
       result.follow_up_options = [];
     } else {
-      // At most 4 follow up questions
       const options = Array.isArray(result.follow_up_options) ? result.follow_up_options : [];
       result.follow_up_options = options.slice(0, 4);
 
-      // If AI can't generate follow up question
       if (!result.follow_up_question || result.follow_up_options.length < 2) {
         result.follow_up_question = "Is it working right now?";
         result.follow_up_options = ["Yes, it works", "No, it's broken", "Not sure"];
