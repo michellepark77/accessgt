@@ -23,7 +23,7 @@
   </head>
   <body>
 
-    <!-- adding a header -->
+    <!-- header -->
    <header class="app-header">
       <div class="header-brand-group">
         <div class="brand">
@@ -54,10 +54,10 @@
   <div class = "page-content">
    
 
-    <!-- Sidebar and map -->
+    <!--  body/map-->
     <main class="app-layout">
       <aside class="sidebar">
-        <!-- Mermaid guide -->
+        <!-- Mermaid dude--> 
         <div class="mascot-guide">
           <img
             src="/images/nerd_mermaid_mascot.png"
@@ -76,8 +76,8 @@
          Find access points and view reported barriers
         </p>
 
-        <!-- ADDING AN ADD ITEM SECTION -->
-                        <!-- Quick community report -->
+      
+        <!-- new report area-->
                 <section class="quick-report">
 
                   <p class="eyebrow">COMMUNITY REPORT</p>
@@ -200,7 +200,7 @@
       </aside>
 
       <section class="map-panel" aria-label="Campus map">
-        <!-- Heading and decoration -->
+        <!-- heading areaaaa-->
         <div class="map-header">
           <h2>Campus Explorer</h2>
 
@@ -224,7 +224,7 @@
 
 
 
-<!-- Supabase library -->
+<!-- Supabase part-->
 
 <script type="module">
   import { createClient } from "@supabase/supabase-js";
@@ -251,33 +251,6 @@
 }
 
 
-// async function loadPlacesOntoMap() {
-//   const { data: places, error } = await supabaseClient
-//     .from("places")
-//     .select("id, name, address, type, lat, lng");
-
-//   if (error) {
-//     console.error("Couldn't load places onto map:", error);
-//     return;
-//   }
-
-  
-
-//   console.log("Places from Supabase:", places);
-
-//   places.forEach((place) => {
-//     if (place.lat == null || place.lng == null) return;
-
-//     new google.maps.Marker({
-//       position: {
-//         lat: Number(place.lat),
-//         lng: Number(place.lng)
-//       },
-//       map: map,
-//       title: place.name
-//     });
-//   });
-// }
 
 async function loadPlacesOntoMap() {
   const { data: places, error } = await supabaseClient
@@ -361,7 +334,6 @@ async function loadPlacesIntoDropdown() {
 loadPlacesIntoDropdown();
 
 
-  // ALL your existing JS continues underneath here
 
 
   const addPlaceBtn = document.getElementById("add-place-btn");
@@ -439,7 +411,6 @@ document
       return;
     }
 
-    //  geocode next
    const geocoder = new google.maps.Geocoder();
 
 
@@ -465,7 +436,6 @@ geocoder.geocode(
     console.log("Latitude:", lat);
     console.log("Longitude:", lng);
 
-    // STEP 6: Supabase insert
       const { data: place, error: placeError } =
   await supabaseClient
     .from("places")
