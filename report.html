@@ -480,6 +480,8 @@
       const SUPABASE_URL = "%VITE_SUPABASE_URL%";
       const SUPABASE_KEY = "%VITE_SUPABASE_PUBLISHABLE_KEY%";
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// jane 
+      let databasePlaces = [];
 
       async function uploadPhoto(file) {
         const path = `reports/${Date.now()}.jpg`;
@@ -513,6 +515,8 @@
       const issueOptions = document.getElementById("issue-options");
       const facilityNote = document.getElementById("facility-note");
       const locationSelect = document.getElementById("location");
+
+
       const floorInput = document.getElementById("floor");
       const submitButton = document.getElementById("submit-button");
       const statusText = document.getElementById("status");
@@ -780,7 +784,10 @@
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        const location = LOCATIONS.find((loc) => loc.id === locationSelect.value);
+        // const location = LOCATIONS.find((loc) => loc.id === locationSelect.value);
+        const location = databasePlaces.find(
+  (place) => String(place.id) === String(locationSelect.value)
+);
         const facility = FACILITIES[selectedFacility];
         const issue = facility.issues.find((i) => i.id === selectedIssue);
 

@@ -1,8 +1,4 @@
-/* =========================================
-   TOUCH GRASS — CAMPUS EXPLORER
-   ========================================= */
-
-/* 1. Colors and theme */
+/* colors and theme */
 :root {
   --cream: #fff9ed;
   --paper: #fffdf7;
@@ -26,7 +22,7 @@
   --header-height: 100px;
 }
 
-/* 2. Base styles */
+/*  styles */
 * {
   box-sizing: border-box;
 }
@@ -92,7 +88,7 @@ summary:focus-visible {
   outline-offset: 4px;
 }
 
-/* 3. Header */
+/* header*/
 .app-header {
   position: fixed;
   top: 0;
@@ -149,22 +145,7 @@ summary:focus-visible {
   font-size: 16px;
 }
 
-/* 4. Prototype notice */
-.demo-banner {
-  padding: 11px 12px;
-  background: var(--sky);
-  color: var(--navy);
-  border-radius: 10px;
-  text-align: center;
-  font-size: 14px;
-}
-
-
-.demo-banner strong {
-  font-weight: 700;
-}
-
-/* 5. Main layout */
+/*mainlay */
 .app-layout {
   display: grid;
   grid-template-columns: 330px minmax(0, 1fr);
@@ -174,7 +155,7 @@ summary:focus-visible {
   margin-top: 20px
 }
 
-/* 6. Sidebar panel */
+/*sidebar panel */
 .sidebar {
   min-width: 0;
   padding: 22px;
@@ -217,7 +198,7 @@ summary:focus-visible {
   border-top: 1px solid var(--border-light);
 }
 
-/* 7. Mermaid guide and speech bubble */
+/* mermaid guide and speech bubble */
 .mascot-guide {
   display: flex;
   align-items: center;
@@ -251,7 +232,7 @@ summary:focus-visible {
   margin: 0;
 }
 
-/* Small speech-bubble tail */
+/* small speechbubble  */
 .guide-bubble::before {
   content: "";
   position: absolute;
@@ -265,7 +246,7 @@ summary:focus-visible {
   transform: rotate(45deg);
 }
 
-/* 8. Search and form fields */
+/* search and form fields */
 .form-field {
   margin-bottom: 18px;
 }
@@ -313,7 +294,6 @@ summary:focus-visible {
   border-color: var(--ocean-dark);
 }
 
-/* Optional search icon wrapper */
 .search-field {
   position: relative;
 }
@@ -332,7 +312,7 @@ summary:focus-visible {
   padding-left: 44px;
 }
 
-/* 9. Filters */
+/* filters */
 .filters,
 .preferences {
   min-width: 0;
@@ -387,7 +367,7 @@ summary:focus-visible {
   height: 28px;
 }
 
-/* 10. Raised buttons */
+/* buttons */
 .primary-button,
 .report-button {
   display: inline-flex;
@@ -465,7 +445,7 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* 11. Location details card */
+/*location details card */
 .selected-report {
   margin-top: 24px;
   padding: 18px;
@@ -541,8 +521,7 @@ button:disabled {
   font-size: 14px;
 }
 
-/* 12. Map-only page
-   This styles your existing #map immediately. */
+/* map immediately */
 #map {
   width: 100%;
   height: calc(100vh - 40px);
@@ -555,7 +534,6 @@ button:disabled {
   box-shadow: var(--shadow);
 }
 
-/* 13. Map panel for the complete layout */
 .map-panel {
   min-width: 0;
   background: var(--paper);
@@ -596,8 +574,7 @@ button:disabled {
   font-size: 14px;
 }
 
-/* Removes the duplicate frame when
-   #map is placed inside .map-panel */
+
 .map-panel #map {
   height: 68vh;
   min-height: 500px;
@@ -606,7 +583,7 @@ button:disabled {
   box-shadow: none;
 }
 
-/* 14. Legend below the map */
+/*legend below map */
 .map-legend {
   display: flex;
   align-items: center;
@@ -630,7 +607,6 @@ button:disabled {
   object-fit: contain;
 }
 
-/* 15. Google Maps popup text */
 #map h3 {
   color: var(--navy);
   font-family: Helvetica, Arial, sans-serif;
@@ -646,27 +622,7 @@ button:disabled {
   line-height: 1.5;
 }
 
-/* 16. Optional footer mascot */
-.mascot-footer {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 26px;
-}
-
-.mascot-footer img {
-  width: 72px;
-  height: 72px;
-  object-fit: contain;
-}
-
-.mascot-footer p {
-  margin: 0;
-  color: var(--text);
-  font-size: 13px;
-}
-
-/* 17. Tablet layout */
+/* ipad lay */
 @media (max-width: 1000px) {
   .app-layout {
     grid-template-columns: 290px minmax(0, 1fr);
@@ -699,8 +655,6 @@ button:disabled {
   }
 }
 
-
-/* 18. Mobile layout */
 @media (max-width: 740px) {
 
   :root {
@@ -840,7 +794,6 @@ button:disabled {
 }
 
 
-/* 19. Respect reduced-motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .primary-button,
   .report-button {
@@ -901,7 +854,7 @@ button:disabled {
   padding-bottom: 80px;
 }
 
-/**styling header buttons**/
+/** header buttons**/
 .header-buttons {
   display: flex;
   gap: 16px;
@@ -920,8 +873,7 @@ button:disabled {
 
 
 
-/**tooltip message sections*/
-/** tooltip message sections */
+/**tooltip  */
 .tooltip {
   position: relative;
 }
@@ -969,9 +921,6 @@ button:disabled {
 }
 
 
-/* ==============================
-   QUICK COMMUNITY REPORT
-   ============================== */
 
 .quick-report {
   margin-top: 24px;
@@ -1096,9 +1045,7 @@ button:disabled {
   color: white;
 }
 
-/* =========================
-   MAP PIN POPUP
-   ========================= */
+/*map popup thing*/
 
 .map-popup {
   min-width: 210px;
@@ -1108,7 +1055,7 @@ button:disabled {
   color: var(--navy);
 }
 
-/* Place name */
+/* place*/
 .map-popup h3 {
   margin: 0 0 8px;
   font-size: 18px;
@@ -1117,7 +1064,6 @@ button:disabled {
   line-height: 1.2;
 }
 
-/* General popup text */
 .map-popup p {
   margin: 4px 0;
   font-size: 13px;
@@ -1125,7 +1071,6 @@ button:disabled {
   color: var(--text);
 }
 
-/* Facility / place type */
 .map-popup .popup-type {
   display: inline-block;
   margin-bottom: 8px;
@@ -1141,7 +1086,7 @@ button:disabled {
   font-weight: 700;
 }
 
-/* Rating row */
+/* rating */
 .map-popup .popup-rating {
   margin: 8px 0;
   padding: 8px 10px;
@@ -1154,20 +1099,19 @@ button:disabled {
   font-weight: 700;
 }
 
-/* Stars */
+/* stars*/
 .map-popup .popup-stars {
   letter-spacing: 1px;
   font-size: 16px;
 }
 
-/* Address */
+/* address*/
 .map-popup .popup-address {
   margin-top: 7px;
   color: var(--muted);
   font-size: 12px;
 }
 
-/* Recent community note */
 .map-popup .popup-note {
   margin-top: 10px;
   padding: 9px 10px;
@@ -1182,7 +1126,6 @@ button:disabled {
   line-height: 1.4;
 }
 
-/* Small label above note */
 .map-popup .popup-note-label {
   display: block;
   margin-bottom: 3px;
@@ -1194,12 +1137,9 @@ button:disabled {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-/* =========================
-   FINAL RESPONSIVE HEADER
-   Keep this at VERY BOTTOM
-   ========================= */
+/*need to update header and override prev stuf*/
 
-/* Normal desktop / tablet header */
+/*  desktop / tablet header */
 .app-header {
   padding: 12px clamp(20px, 6vw, 72px);
 
@@ -1211,7 +1151,6 @@ button:disabled {
   gap: 20px;
 }
 
-/* Logo + title + tagline stay beside each other on larger screens */
 .header-brand-group {
   display: flex;
   flex-direction: row;
@@ -1240,7 +1179,6 @@ button:disabled {
   border-left: 1px solid var(--navy);
 }
 
-/* Home / Report */
 .header-buttons {
   display: flex;
   align-items: center;
@@ -1259,9 +1197,7 @@ button:disabled {
 }
 
 
-/* =========================
-   SMALL SCREEN HEADER
-   ========================= */
+/* mobile narrow screen*/
 
 @media (max-width: 740px) {
 
@@ -1273,7 +1209,6 @@ button:disabled {
     height: auto;
     min-height: var(--header-height);
 
-    /* LEFT + RIGHT breathing room */
     padding: 14px 20px 16px;
 
     display: flex;
@@ -1284,7 +1219,6 @@ button:disabled {
     gap: 8px;
   }
 
-  /* Logo/title first, tagline wraps underneath */
   .header-brand-group {
     width: 100%;
 
@@ -1310,7 +1244,6 @@ button:disabled {
     white-space: nowrap;
   }
 
-  /* Tagline gets its own row */
   .tagline {
     width: 100%;
 
@@ -1323,7 +1256,6 @@ button:disabled {
     line-height: 1.25;
   }
 
-  /* Home / Report get their own row */
   .header-buttons {
     width: 100%;
 
@@ -1342,7 +1274,6 @@ button:disabled {
     margin-right: 0;
   }
 
-  /* Push page down below taller mobile header */
   .page-content {
     padding-top: calc(var(--header-height) + 20px);
     padding-left: 6%;
