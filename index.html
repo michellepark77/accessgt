@@ -217,26 +217,6 @@
     </main>
 </div>
 
-    <script>
-
-          const SUPABASE_URL = "%VITE_SUPABASE_URL%";
-          const SUPABASE_KEY = "%VITE_SUPABASE_PUBLISHABLE_KEY%";
-
-          const supabaseClient =
-            supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-
-
-
-
-    </script>
-
-   
-
-
-
-
-
 <footer class="app-footer">
   <p>Touch Grass | Campus Accessibility Explorer | contact@gmail.com </p>
 </footer>
@@ -256,16 +236,47 @@
   console.log("Supabase connected:", supabaseClient);
 
   let map;
+  window.initMap =function() {
+  console.log("INIT MAP RAN");
 
-window.initMap = function () {
   map = new google.maps.Map(document.getElementById("map"), {
     center: { lat: 33.7756, lng: -84.3963 },
     zoom: 16
   });
 
-  loadPlacesOntoMap();
-};
+  console.log("MAP CREATED");
 
+  loadPlacesOntoMap();
+}
+
+
+// async function loadPlacesOntoMap() {
+//   const { data: places, error } = await supabaseClient
+//     .from("places")
+//     .select("id, name, address, type, lat, lng");
+
+//   if (error) {
+//     console.error("Couldn't load places onto map:", error);
+//     return;
+//   }
+
+  
+
+//   console.log("Places from Supabase:", places);
+
+//   places.forEach((place) => {
+//     if (place.lat == null || place.lng == null) return;
+
+//     new google.maps.Marker({
+//       position: {
+//         lat: Number(place.lat),
+//         lng: Number(place.lng)
+//       },
+//       map: map,
+//       title: place.name
+//     });
+//   });
+// }
 
 async function loadPlacesOntoMap() {
   const { data: places, error } = await supabaseClient
@@ -277,20 +288,45 @@ async function loadPlacesOntoMap() {
     return;
   }
 
-  
-
   console.log("Places from Supabase:", places);
 
   places.forEach((place) => {
-    if (place.lat == null || place.lng == null) return;
+    if (place.lat == null || place.lng == null) {
+      return;
+    }
 
-    new google.maps.Marker({
+    const marker = new google.maps.Marker({
       position: {
         lat: Number(place.lat),
         lng: Number(place.lng)
       },
       map: map,
       title: place.name
+    });
+
+    const popupContent = document.createElement("div");
+
+    const nameText = document.createElement("h3");
+    nameText.textContent = place.name;
+
+    const typeText = document.createElement("p");
+    typeText.textContent = place.type || "";
+
+    const addressText = document.createElement("p");
+    addressText.textContent = place.address || "";
+
+    popupContent.append(
+      nameText,
+      typeText,
+      addressText
+    );
+
+    const infoWindow = new google.maps.InfoWindow({
+      content: popupContent
+    });
+
+    marker.addListener("click", () => {
+      infoWindow.open(map, marker);
     });
   });
 }
@@ -505,15 +541,15 @@ document
 
 
 
+const googleMapsScript = document.createElement("script");
+
+googleMapsScript.src =
+  "https://maps.googleapis.com/maps/api/js?key=AIzaSyBLsAXmkL_jNvSm5VNsSgISZqILD_0eDC0&loading=async&callback=initMap";
+
+googleMapsScript.async = true;
+
+document.head.appendChild(googleMapsScript);
 </script>
-
- <!-- 4. Google Maps JS API script -->
-<script
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBLsAXmkL_jNvSm5VNsSgISZqILD_0eDC0&loading=async&callback=initMap"
-async
-defer
-></script>
-
 
 </body>
 </html>
