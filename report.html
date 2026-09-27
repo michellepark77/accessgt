@@ -428,14 +428,14 @@
 
     <script>
       // ---------- Buildings for the dropdown (coordinates are approximate) ----------
-      const LOCATIONS = [
-        { id: "klaus",          name: "Klaus Building",        lat: 33.7771, lng: -84.3963 },
-        { id: "clough",         name: "Clough Commons",        lat: 33.7749, lng: -84.3964 },
-        { id: "library",        name: "Price Gilbert Library", lat: 33.7743, lng: -84.3957 },
-        { id: "student_center", name: "Student Center",        lat: 33.7738, lng: -84.3988 },
-        { id: "coda",           name: "Coda",                  lat: 33.7765, lng: -84.3880 },
-        { id: "other",          name: "Other",                 lat: 33.7756, lng: -84.3963 },
-      ];
+      // const LOCATIONS = [
+      //   { id: "klaus",          name: "Klaus Building",        lat: 33.7771, lng: -84.3963 },
+      //   { id: "clough",         name: "Clough Commons",        lat: 33.7749, lng: -84.3964 },
+      //   { id: "library",        name: "Price Gilbert Library", lat: 33.7743, lng: -84.3957 },
+      //   { id: "student_center", name: "Student Center",        lat: 33.7738, lng: -84.3988 },
+      //   { id: "coda",           name: "Coda",                  lat: 33.7765, lng: -84.3880 },
+      //   { id: "other",          name: "Other",                 lat: 33.7756, lng: -84.3963 },
+      // ];
 
       // ---------- Facility types and their possible problems ----------
       const FACILITIES = {
@@ -484,6 +484,8 @@
       const SUPABASE_URL = "%VITE_SUPABASE_URL%";
       const SUPABASE_KEY = "%VITE_SUPABASE_PUBLISHABLE_KEY%";
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// jane 
+      let databasePlaces = [];
 
       //uploads photo and returns public url for the SupaBase database
       async function uploadPhoto(file) {
@@ -519,6 +521,8 @@
       const issueOptions = document.getElementById("issue-options");
       const facilityNote = document.getElementById("facility-note");
       const locationSelect = document.getElementById("location");
+
+
       const floorInput = document.getElementById("floor");
       const submitButton = document.getElementById("submit-button");
       const statusText = document.getElementById("status");
@@ -541,12 +545,12 @@
       let latestAnalysis = 0;
 
       // ---------- Fill the building dropdown ----------
-      LOCATIONS.forEach((loc) => {
-        const option = document.createElement("option");
-        option.value = loc.id;
-        option.textContent = loc.name;
-        locationSelect.appendChild(option);
-      });
+      // LOCATIONS.forEach((loc) => {
+      //   const option = document.createElement("option");
+      //   option.value = loc.id;
+      //   option.textContent = loc.name;
+      //   locationSelect.appendChild(option);
+      // });
 
       Object.entries(FACILITIES).forEach(([id, facility]) => {
         const label = document.createElement("label");
@@ -575,6 +579,36 @@
         input.addEventListener("change", () => chooseFacility(id));
       });
 
+
+      // new function for dropdown 
+
+      async function loadPlacesIntoReportDropdown() {
+  const { data: places, error } = await supabaseClient
+    .from("places")
+    .select("id, name, address, lat, lng")
+    .order("name");
+
+  if (error) {
+    console.error("Couldn't load places:", error);
+    return;
+  }
+
+  databasePlaces = places;
+
+  locationSelect.innerHTML =
+    '<option value="">Choose a building</option>';
+
+  places.forEach((place) => {
+    const option = document.createElement("option");
+
+    option.value = place.id;
+    option.textContent = place.name;
+
+    locationSelect.appendChild(option);
+  });
+}
+
+loadPlacesIntoReportDropdown();
       // ---------- Pick a facility: check its card and show ITS problems ----------
       function chooseFacility(id) {
         const facility = FACILITIES[id];
@@ -805,7 +839,10 @@
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        const location = LOCATIONS.find((loc) => loc.id === locationSelect.value);
+        // const location = LOCATIONS.find((loc) => loc.id === locationSelect.value);
+        const location = databasePlaces.find(
+  (place) => String(place.id) === String(locationSelect.value)
+);
         const facility = FACILITIES[selectedFacility];
         const issue = facility.issues.find((i) => i.id === selectedIssue);
 
