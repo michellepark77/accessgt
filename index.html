@@ -145,7 +145,11 @@
                   placeholder="What should others know?"
                 ></textarea>
 
-                <button type="button" class="quick-submit">
+                <button 
+                    type="button" 
+                    class="quick-submit"
+                    id="add-place-submit"
+                    >
                   Add Pin
                 </button>
 
@@ -157,10 +161,6 @@
 
                   <select id="existing-place">
                     <option value="">Choose an existing place</option>
-                    <option>Student Center</option>
-                    <option>Clough Commons</option>
-                    <option>Campus Recreation Center</option>
-                    <option>Tech Tower</option>
                   </select>
 
                   <label>Accessibility &#9733; | 1 = awful 5 = amazing</label>
@@ -180,7 +180,11 @@
                     placeholder="What should others know?"
                   ></textarea>
 
-                  <button type="button" class="quick-submit">
+                  <button 
+                      type="button"
+                      class="quick-submit"
+                      id="rate-place-submit"
+                       >
                     Submit Rating
                   </button>
 
@@ -214,65 +218,115 @@
 </div>
 
     <script>
-      // 1. Hard-coded mock data centered around Georgia Tech campus
-      const issues = [
-        { id: 1, type: "Blocked Ramp", lat: 33.7756, lng: -84.3963, desc: "Construction equipment blocking sidewalk ramp near Tech Tower." },
-        { id: 2, type: "Broken Elevator", lat: 33.7765, lng: -84.3981, desc: "Student Center elevator out of order." },
-        { id: 3, type: "Missing Curb Cut", lat: 33.7780, lng: -84.3970, desc: "No curb cut at crosswalk." },
-        { id: 4, type: "Automatic Door Failure", lat: 33.7742, lng: -84.3955, desc: "Push-button entry door not responding." },
-        { id: 5, type: "Steep Slope Warning", lat: 33.7771, lng: -84.4010, desc: "Excessive grade near West Campus housing." },
-        { id: 6, type: "Uneven Pavement", lat: 33.7738, lng: -84.3988, desc: "Tree roots lifting concrete." }
-      ];
 
-      function initMap() {
-        // 2. Center map on Georgia Tech campus coordinates
-        const gaTechCampus = { lat: 33.7756, lng: -84.3963 };
-        
-        const map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 16,
-          center: gaTechCampus,
-        });
+          const SUPABASE_URL = "%VITE_SUPABASE_URL%";
+          const SUPABASE_KEY = "%VITE_SUPABASE_PUBLISHABLE_KEY%";
 
-        const infoWindow = new google.maps.InfoWindow();
+          const supabaseClient =
+            supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 3. Loop through hard-coded issues and drop markers
-        issues.forEach((issue) => {
-          const marker = new google.maps.Marker({
-            position: { lat: issue.lat, lng: issue.lng },
-            map: map,
-            title: issue.type,
-          });
 
-          // Open an InfoWindow when clicking a marker
-          marker.addListener("click", () => {
-            infoWindow.setContent(`
-              <div style="font-family: sans-serif; padding: 4px;">
-                <h3 style="margin: 0 0 4px 0;">${issue.type}</h3>
-                <p style="margin: 0;">${issue.desc}</p>
-              </div>
-            `);
-            infoWindow.open(map, marker);
-          });
-        });
-      }
+
+
+
     </script>
 
-    <!-- 4. Google Maps JS API script -->
-<script
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBLsAXmkL_jNvSm5VNsSgISZqILD_0eDC0&loading=async&callback=initMap"
-async
-defer
-></script>
+   
 
 
 
 
 
 <footer class="app-footer">
-  <p>Touch Grass | Campus Accessibility Explorer |contact@gmail.com </p>
+  <p>Touch Grass | Campus Accessibility Explorer | contact@gmail.com </p>
 </footer>
 
-<script>
+
+
+<!-- Supabase library -->
+
+<script type="module">
+  import { createClient } from "@supabase/supabase-js";
+
+  const supabaseClient = createClient(
+    import.meta.env.VITE_SUPABASE_URL,
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+  );
+
+  console.log("Supabase connected:", supabaseClient);
+
+  let map;
+
+window.initMap = function () {
+  map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat: 33.7756, lng: -84.3963 },
+    zoom: 16
+  });
+
+  loadPlacesOntoMap();
+};
+
+
+async function loadPlacesOntoMap() {
+  const { data: places, error } = await supabaseClient
+    .from("places")
+    .select("id, name, address, type, lat, lng");
+
+  if (error) {
+    console.error("Couldn't load places onto map:", error);
+    return;
+  }
+
+  
+
+  console.log("Places from Supabase:", places);
+
+  places.forEach((place) => {
+    if (place.lat == null || place.lng == null) return;
+
+    new google.maps.Marker({
+      position: {
+        lat: Number(place.lat),
+        lng: Number(place.lng)
+      },
+      map: map,
+      title: place.name
+    });
+  });
+}
+
+async function loadPlacesIntoDropdown() {
+  const { data: places, error } = await supabaseClient
+    .from("places")
+    .select("id, name")
+    .order("name");
+
+  if (error) {
+    console.error("Couldn't load places into dropdown:", error);
+    return;
+  }
+
+  const dropdown = document.getElementById("existing-place");
+
+  dropdown.innerHTML =
+    '<option value="">Choose an existing place</option>';
+
+  places.forEach((place) => {
+    const option = document.createElement("option");
+
+    option.value = place.id;
+    option.textContent = place.name;
+
+    dropdown.appendChild(option);
+  });
+}
+
+loadPlacesIntoDropdown();
+
+
+  // ALL your existing JS continues underneath here
+
+
   const addPlaceBtn = document.getElementById("add-place-btn");
   const ratePlaceBtn = document.getElementById("rate-place-btn");
 
@@ -294,6 +348,172 @@ defer
     ratePlaceBtn.classList.add("active");
     addPlaceBtn.classList.remove("active");
   });
+
+let addPlaceRating = null;
+let existingPlaceRating = null;
+
+const addRatingButtons =
+  document.querySelectorAll("#add-place-form .rating-row button");
+
+addRatingButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    addPlaceRating = Number(button.textContent);
+
+    addRatingButtons.forEach((btn) => {
+      btn.classList.remove("selected");
+    });
+
+    button.classList.add("selected");
+  });
+});
+
+const existingRatingButtons =
+  document.querySelectorAll("#rate-place-form .rating-row button");
+
+existingRatingButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    existingPlaceRating = Number(button.textContent);
+
+    existingRatingButtons.forEach((btn) => {
+      btn.classList.remove("selected");
+    });
+
+    button.classList.add("selected");
+  });
+});
+document
+  .getElementById("add-place-submit")
+  .addEventListener("click", async () => {
+
+    const name =
+      document.getElementById("place-name").value.trim();
+
+    const address =
+      document.getElementById("place-address").value.trim();
+
+    const type =
+      document.getElementById("place-type").value;
+
+    const note =
+      document.getElementById("place-note").value.trim();
+
+    if (!name || !address || !type || !addPlaceRating) {
+      alert("Please fill out the required fields.");
+      return;
+    }
+
+    //  geocode next
+   const geocoder = new google.maps.Geocoder();
+
+
+console.log("Trying to geocode:", address);
+geocoder.geocode(
+  { address: address },
+  async (results, status) => {
+
+        if (status !== "OK" || !results[0]) {
+      console.error("Address sent:", address);
+      console.error("Geocoder status:", status);
+      console.error("Results:", results);
+
+      alert("Geocoding failed: " + status);
+      return;
+    } 
+
+    const location = results[0].geometry.location;
+
+    const lat = location.lat();
+    const lng = location.lng();
+
+    console.log("Latitude:", lat);
+    console.log("Longitude:", lng);
+
+    // STEP 6: Supabase insert
+      const { data: place, error: placeError } =
+  await supabaseClient
+    .from("places")
+    .insert({
+      name: name,
+      address: address,
+      type: type,
+      lat: lat,
+      lng: lng
+    })
+    .select()
+    .single();
+
+if (placeError) {
+  console.error("Supabase insert error:", placeError);
+  alert("Couldn't save the place: " + placeError.message);
+  return;
+}
+const { error: ratingError } =
+  await supabaseClient
+    .from("place_ratings")
+    .insert({
+      place_id: place.id,
+      rating: addPlaceRating,
+      note: note
+    });
+
+if (ratingError) {
+  console.error(ratingError);
+  alert("Place saved, but the rating couldn't be saved.");
+  return;
+}
+
+alert("Place added!");
+  }
+);
+
+
+  });
+
+ /* RATE PLACE*/
+
+document
+  .getElementById("rate-place-submit")
+  .addEventListener("click", async () => {
+
+    const placeId =
+      document.getElementById("existing-place").value;
+
+    const note =
+      document.getElementById("rating-note").value.trim();
+
+    if (!placeId || !existingPlaceRating) {
+      alert("Please choose a place and a rating.");
+      return;
+    }
+
+    const { error } = await supabaseClient
+      .from("place_ratings")
+      .insert({
+        place_id: placeId,
+        rating: existingPlaceRating,
+        note: note
+      });
+
+    if (error) {
+      console.error("Rating error:", error);
+      alert("Couldn't save rating: " + error.message);
+      return;
+    }
+
+    alert("Rating submitted!");
+  });
+
+
+
 </script>
+
+ <!-- 4. Google Maps JS API script -->
+<script
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBLsAXmkL_jNvSm5VNsSgISZqILD_0eDC0&loading=async&callback=initMap"
+async
+defer
+></script>
+
+
 </body>
 </html>
