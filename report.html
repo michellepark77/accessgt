@@ -362,7 +362,6 @@
           ></textarea>
         </div>
 
-        <!-- Insert/take Photo-->
         <div class="field">
           <span class="label">Add a photo <span class="hint">(optional)</span></span>
           <input type="file" id="photo" accept="image/*" capture="environment" class="visually-hidden" />
@@ -423,21 +422,18 @@
       </form>
     </main>
 
-    <!-- Supabase library access. -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-      // ---------- Buildings for the dropdown (coordinates are approximate) ----------
-      // const LOCATIONS = [
-      //   { id: "klaus",          name: "Klaus Building",        lat: 33.7771, lng: -84.3963 },
-      //   { id: "clough",         name: "Clough Commons",        lat: 33.7749, lng: -84.3964 },
-      //   { id: "library",        name: "Price Gilbert Library", lat: 33.7743, lng: -84.3957 },
-      //   { id: "student_center", name: "Student Center",        lat: 33.7738, lng: -84.3988 },
-      //   { id: "coda",           name: "Coda",                  lat: 33.7765, lng: -84.3880 },
-      //   { id: "other",          name: "Other",                 lat: 33.7756, lng: -84.3963 },
-      // ];
+      const LOCATIONS = [
+        { id: "klaus",          name: "Klaus Building",        lat: 33.7771, lng: -84.3963 },
+        { id: "clough",         name: "Clough Commons",        lat: 33.7749, lng: -84.3964 },
+        { id: "library",        name: "Price Gilbert Library", lat: 33.7743, lng: -84.3957 },
+        { id: "student_center", name: "Student Center",        lat: 33.7738, lng: -84.3988 },
+        { id: "coda",           name: "Coda",                  lat: 33.7765, lng: -84.3880 },
+        { id: "other",          name: "Other",                 lat: 33.7756, lng: -84.3963 },
+      ];
 
-      // ---------- Facility types and their possible problems ----------
       const FACILITIES = {
         water: {
           label: "Water fountain",
@@ -487,7 +483,6 @@
 // jane 
       let databasePlaces = [];
 
-      //uploads photo and returns public url for the SupaBase database
       async function uploadPhoto(file) {
         const path = `reports/${Date.now()}.jpg`;
         const { error } = await supabaseClient.storage
@@ -503,7 +498,6 @@
         return data.publicUrl;
       }
 
-      // ---------- Grab page elements ----------
       const form = document.getElementById("report-form");
       const reportText = document.getElementById("report-text");
       const photoInput = document.getElementById("photo");
@@ -537,20 +531,19 @@
       const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
       if (isTouchDevice) openCameraButton.hidden = true;
 
-      let selectedPhoto = null;     // the photo, from the file input OR the camera
-      let stream = null;            // the live camera connection
-      let selectedFacility = null;  // need elevator
-      let selectedIssue = null;     //need not working
+      let selectedPhoto = null;
+      let stream = null;
+      let selectedFacility = null;
+      let selectedIssue = null;
       let aiResult = null;
       let latestAnalysis = 0;
 
-      // ---------- Fill the building dropdown ----------
-      // LOCATIONS.forEach((loc) => {
-      //   const option = document.createElement("option");
-      //   option.value = loc.id;
-      //   option.textContent = loc.name;
-      //   locationSelect.appendChild(option);
-      // });
+      LOCATIONS.forEach((loc) => {
+        const option = document.createElement("option");
+        option.value = loc.id;
+        option.textContent = loc.name;
+        locationSelect.appendChild(option);
+      });
 
       Object.entries(FACILITIES).forEach(([id, facility]) => {
         const label = document.createElement("label");
@@ -558,7 +551,7 @@
 
         const input = document.createElement("input");
         input.type = "radio";
-        input.name = "facility"; // same name = only one can be picked
+        input.name = "facility";
         input.value = id;
 
         const card = document.createElement("span");
@@ -579,41 +572,10 @@
         input.addEventListener("change", () => chooseFacility(id));
       });
 
-
-      // new function for dropdown 
-
-      async function loadPlacesIntoReportDropdown() {
-  const { data: places, error } = await supabaseClient
-    .from("places")
-    .select("id, name, address, lat, lng")
-    .order("name");
-
-  if (error) {
-    console.error("Couldn't load places:", error);
-    return;
-  }
-
-  databasePlaces = places;
-
-  locationSelect.innerHTML =
-    '<option value="">Choose a building</option>';
-
-  places.forEach((place) => {
-    const option = document.createElement("option");
-
-    option.value = place.id;
-    option.textContent = place.name;
-
-    locationSelect.appendChild(option);
-  });
-}
-
-loadPlacesIntoReportDropdown();
-      // ---------- Pick a facility: check its card and show ITS problems ----------
       function chooseFacility(id) {
         const facility = FACILITIES[id];
         selectedFacility = id;
-        selectedIssue = null; // the old problem doesn't apply to the new facility
+        selectedIssue = null;
 
         facilityOptions.querySelector(`input[value="${id}"]`).checked = true;
 
@@ -646,16 +608,14 @@ loadPlacesIntoReportDropdown();
         updateButtons();
       }
 
-      // ---------- Pick a problem ----------
       function chooseIssue(id) {
         const input = issueOptions.querySelector(`input[value="${id}"]`);
-        if (!input) return; // not a valid problem for this facility (e.g. "unclear")
+        if (!input) return;
         input.checked = true;
         selectedIssue = id;
         updateButtons();
       }
 
-      // ---------- Use a photo (shared by both ways of getting one) ----------
       function usePhoto(file) {
         selectedPhoto = file;
         const img = document.createElement("img");
@@ -669,9 +629,9 @@ loadPlacesIntoReportDropdown();
 
       photoInput.addEventListener("change", () => {
         const file = photoInput.files[0];
-        if (!file) return; // the student cancelled the camera or picker
+        if (!file) return;
         usePhoto(file);
-        photoInput.value = ""; // reset, so picking the same photo again still counts as a change
+        photoInput.value = "";
       });
 
       openCameraButton.addEventListener("click", async () => {
@@ -680,7 +640,7 @@ loadPlacesIntoReportDropdown();
             video: { facingMode: "environment" },
           });
           video.srcObject = stream;
-          await video.play(); // some browsers need an explicit start, not just autoplay
+          await video.play();
           cameraBox.hidden = false;
           openCameraButton.hidden = true;
           photoStatus.textContent = "";
@@ -690,8 +650,6 @@ loadPlacesIntoReportDropdown();
       });
 
       snapButton.addEventListener("click", () => {
-        // On some phones the video needs a moment before it has a real picture.
-        // A width of 0 means there's no frame yet, which would make an empty photo.
         if (!video.videoWidth) {
           photoStatus.textContent = "The camera is still starting. Try again in a second.";
           return;
@@ -704,11 +662,10 @@ loadPlacesIntoReportDropdown();
         canvas.toBlob((blob) => {
           if (!blob) {
             photoStatus.textContent = "Couldn't capture that photo. Try again, or tap the photo box instead.";
-            return; // keep the camera on so they can retry
+            return;
           }
           usePhoto(new File([blob], "camera-photo.jpg", { type: "image/jpeg" }));
 
-          // Only turn the camera off once we actually have the photo
           stream.getTracks().forEach((track) => track.stop());
           cameraBox.hidden = true;
           openCameraButton.hidden = isTouchDevice;
@@ -717,7 +674,6 @@ loadPlacesIntoReportDropdown();
 
       reportText.addEventListener("input", updateButtons);
 
-      // Skip the AI and fill everything in by hand
       manualButton.addEventListener("click", () => {
         details.hidden = false;
         aiBadge.hidden = true;
@@ -725,7 +681,6 @@ loadPlacesIntoReportDropdown();
         facilityOptions.querySelector("input").focus();
       });
 
-      // ---------- Shrink the photo before sending ----------
       function resizePhoto(file, maxSize = 1024) {
         return new Promise((resolve, reject) => {
           const img = new Image();
@@ -742,7 +697,6 @@ loadPlacesIntoReportDropdown();
         });
       }
 
-      // ---------- The AI step: read the words (and photo), then fill in the form ----------
       fillButton.addEventListener("click", async () => {
         latestAnalysis += 1;
         const thisAnalysis = latestAnalysis;
@@ -759,12 +713,12 @@ loadPlacesIntoReportDropdown();
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               text: reportText.value.trim(),
-              image: image, // null when there's no photo
+              image: image,
             }),
           });
 
           const result = await response.json();
-          if (thisAnalysis !== latestAnalysis) return; // a newer request replaced this one
+          if (thisAnalysis !== latestAnalysis) return;
 
           if (!response.ok) {
             throw new Error(result.error || "Something went wrong.");
@@ -788,23 +742,19 @@ loadPlacesIntoReportDropdown();
         details.hidden = false;
         manualButton.hidden = true;
 
-        // Facility and problem
         if (FACILITIES[result.facility]) {
           chooseFacility(result.facility);
-          chooseIssue(result.issue); // does nothing if the AI said "unclear"
+          chooseIssue(result.issue);
         }
 
-        // Building: only fill it in if the student hasn't already picked one
         if (result.building !== "unknown" && locationSelect.value === "") {
           locationSelect.value = result.building;
         }
 
-        // Floor or spot: same rule, never overwrite what the student typed
         if (result.floor && floorInput.value.trim() === "") {
           floorInput.value = result.floor;
         }
 
-        // Tell the student what we understood, and what's still missing
         const missing = [];
         if (!selectedFacility) missing.push("what needs attention");
         if (!selectedIssue) missing.push("what's going on");
@@ -820,9 +770,7 @@ loadPlacesIntoReportDropdown();
         updateButtons();
       }
 
-      // ---------- Button states ----------
       function updateButtons() {
-        // The AI needs something to work with: words, a photo, or both
         const hasInput = reportText.value.trim() !== "" || selectedPhoto !== null;
         if (fillButton.textContent !== "Reading your report…") {
           fillButton.disabled = !hasInput;
@@ -833,9 +781,6 @@ loadPlacesIntoReportDropdown();
 
       locationSelect.addEventListener("change", updateButtons);
 
-      // ---------- Submit: save the report to Supabase ----------
-      // Each report becomes one row in the "reports" table.
-      // The photo goes in Storage, and the row keeps its link (photo_url).
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
 
@@ -851,21 +796,18 @@ loadPlacesIntoReportDropdown();
         statusText.textContent = "";
 
         try {
-          // 1. Upload the photo, shrunk first so it stays small (optional)
           let photoUrl = null;
           if (selectedPhoto) {
             try {
               const resized = await resizePhoto(selectedPhoto);
-              const blob = await (await fetch(resized)).blob(); // data URL → file data
+              const blob = await (await fetch(resized)).blob();
               photoUrl = await uploadPhoto(blob);
             } catch (photoError) {
-              // Tag photo problems so the message below can say exactly what failed
               photoError.step = "photo";
               throw photoError;
             }
           }
 
-          // 2. Save one row. These names must match the table's column names exactly.
           const { error } = await supabaseClient.from("reports").insert({
             building: location.id,
             lat: location.lat,
@@ -878,7 +820,6 @@ loadPlacesIntoReportDropdown();
             summary: aiResult ? aiResult.summary : "",
             photo_url: photoUrl,
             ai_confidence: aiResult ? aiResult.confidence : null,
-            // Did the student change the AI's answer? Useful for measuring accuracy.
             corrected_ai: aiResult
               ? aiResult.facility !== selectedFacility || aiResult.issue !== selectedIssue
               : null,
