@@ -1,16 +1,6 @@
-// api/analyze.js  (Gemini version, uses Google's free tier)
-// Uses "export default" because this project's package.json has "type": "module".
-// This runs on the SERVER (Vercel), never in the browser,
-// so it's the only safe place to use GEMINI_API_KEY.
 
-// First model is preferred; the rest are backups if it's overloaded.
-// Check each ID is available on your free tier in AI Studio.
 const MODELS = ["gemini-3.8-flash", "gemini-3.6-flash"];
 
-// ---------------------------------------------------------------------
-// Buildings. KEEP IN SYNC with LOCATIONS in report.html (same ids).
-// "Also called" helps the AI understand nicknames students actually use.
-// ---------------------------------------------------------------------
 const BUILDINGS = {
   klaus: "Klaus Building (also called Klaus, Klaus Advanced Computing)",
   clough: "Clough Commons (also called Clough, CULC, Clough Undergraduate Learning Commons)",
@@ -20,9 +10,6 @@ const BUILDINGS = {
   other: "Somewhere else on campus that isn't listed",
 };
 
-// ---------------------------------------------------------------------
-// Facilities and problems. KEEP IN SYNC with FACILITIES in report.html.
-// ---------------------------------------------------------------------
 const FACILITY_OPTIONS = {
   water: {
     label: "Water fountain or bottle filler",
@@ -76,9 +63,6 @@ const facilitiesText = Object.entries(FACILITY_OPTIONS)
   })
   .join("\n");
 
-// ---------------------------------------------------------------------
-// STEP 8: The prompt
-// ---------------------------------------------------------------------
 const SYSTEM_PROMPT = `You help Georgia Tech students report problems with campus accessibility facilities.
 
 A student describes a problem in their own words, and may include a photo. Turn their report into form fields.
@@ -104,11 +88,15 @@ Writing the summary:
 - Only include details the student gave or the photo clearly shows. Do not invent anything.
 - If people appear in the photo, do not describe them.
 
+Follow-up question:
+- If you can tell the facility but NOT the problem (common with photo-only reports), write one short question that would identify the problem, with 2 to 4 short answer options. Example: "Is water coming out of the fountain?" with options "Yes", "No, nothing", "Just a trickle".
+- The student will answer by tapping an option, so options must be short and cover the likely problems.
+- If the problem is already clear, or the facility is unclear, set follow_up_question to "" and follow_up_options to [].
+- If the student already answered a follow-up question (shown in their report), use their answer to choose the problem, and do not ask another question.
+
 Confidence is your own estimate from 0 to 1 of how sure you are about the facility and problem together.`;
 
-// ---------------------------------------------------------------------
-// STEP 9: The exact JSON shape the AI must return
-// ---------------------------------------------------------------------
+
 const allIssueIds = [
   ...new Set(Object.values(FACILITY_OPTIONS).flatMap((f) => Object.keys(f.issues))),
 ];
@@ -122,9 +110,17 @@ const RESULT_SCHEMA = {
     floor: { type: "STRING" },
     confidence: { type: "NUMBER" },
     summary: { type: "STRING" },
+    follow_up_question: { type: "STRING" },                          // "" when nothing is unclear
+    follow_up_options: { type: "ARRAY", items: { type: "STRING" } }, // [] when there's no question
   },
-  required: ["facility", "issue", "building", "floor", "confidence", "summary"],
-  propertyOrdering: ["facility", "issue", "building", "floor", "confidence", "summary"],
+  required: [
+    "facility", "issue", "building", "floor", "confidence", "summary",
+    "follow_up_question", "follow_up_options",
+  ],
+  propertyOrdering: [
+    "facility", "issue", "building", "floor", "confidence", "summary",
+    "follow_up_question", "follow_up_options",
+  ],
 };
 
 // Wait for a number of milliseconds
@@ -149,19 +145,19 @@ async function askGemini(requestBody) {
       );
 
       const data = await response.json();
-      if (response.ok) return data; // success: stop here
+      if (response.ok) return data; // pass
 
       console.error(`Gemini error (${model}, attempt ${attempt}):`, JSON.stringify(data, null, 2));
       lastError = { status: response.status };
 
       if (response.status === 503 && attempt === 1) {
-        await wait(1500); // overloaded: wait a moment, try the same model once more
+        await wait(1500); // overloaded
         continue;
       }
-      if (response.status === 503 || response.status === 429) {
-        break; // still busy or out of quota: move on to the next model
+      if (response.status === 503 || response.status === 429 || response.status === 404) {
+        break; // move onto next model
       }
-      throw lastError; // any other error (bad key, bad request): retrying won't help
+      throw lastError;
     }
   }
 
@@ -169,6 +165,7 @@ async function askGemini(requestBody) {
 }
 
 export default async function handler(req, res) {
+    console.log("GEMINI key loaded:", Boolean(process.env.GEMINI_API_KEY), "| Supabase URL loaded:", Boolean(process.env.VITE_SUPABASE_URL));
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Use POST." });
   }
@@ -177,7 +174,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "The server is missing GEMINI_API_KEY." });
   }
 
-  const { text, image } = req.body || {};
+  const { text, image, followUpQuestion, followUpAnswer } = req.body || {};
   const studentText = typeof text === "string" ? text.trim().slice(0, 1000) : "";
   const hasImage = typeof image === "string" && image.startsWith("data:image/");
 
@@ -186,13 +183,21 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Describe the problem or add a photo first." });
   }
 
-  // Build the message: the student's words, plus the photo if there is one
+  // Build the import
   const parts = [
     { text: `Student's report: ${studentText || "(No text. Use the photo only.)"}` },
   ];
 
+  // If the student answered a follow-up question, include it in AI import
+  const hasAnswer = typeof followUpQuestion === "string" && typeof followUpAnswer === "string";
+  if (hasAnswer) {
+    parts.push({
+      text: `Follow-up question: ${followUpQuestion.slice(0, 200)}\nStudent's answer: ${followUpAnswer.slice(0, 100)}`,
+    });
+  }
+
   if (hasImage) {
-    // "data:image/jpeg;base64,AAAA..." → type and data as separate pieces
+    // aggregating import pieces
     const [header, base64Data] = image.split(",");
     const mimeType = header.slice("data:".length, header.indexOf(";"));
     parts.push({ inline_data: { mime_type: mimeType, data: base64Data } });
@@ -218,10 +223,35 @@ export default async function handler(req, res) {
 
     const result = JSON.parse(replyText);
 
-    // Safety check: the issue must belong to the chosen facility
+    // Keep confidence between 0 and 1
+    result.confidence = Math.min(1, Math.max(0, Number(result.confidence) || 0));
+
+    //statement must belong to issue
     const facility = FACILITY_OPTIONS[result.facility];
     if (!facility || !(result.issue in facility.issues)) {
       result.issue = "unclear";
+    }
+
+    // 3. If the AI isn't confident, treat the problem as unconfident
+    if (result.confidence < 0.5 && !hasAnswer) {
+      result.issue = "unclear";
+    }
+
+    const needsQuestion = result.facility !== "unclear" && result.issue === "unclear" && !hasAnswer;
+
+    if (!needsQuestion) {
+      result.follow_up_question = "";
+      result.follow_up_options = [];
+    } else {
+      // At most 4 follow up questions
+      const options = Array.isArray(result.follow_up_options) ? result.follow_up_options : [];
+      result.follow_up_options = options.slice(0, 4);
+
+      // If AI can't generate follow up question
+      if (!result.follow_up_question || result.follow_up_options.length < 2) {
+        result.follow_up_question = "Is it working right now?";
+        result.follow_up_options = ["Yes, it works", "No, it's broken", "Not sure"];
+      }
     }
 
     return res.status(200).json(result);
