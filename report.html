@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet" />
 
     <style>
-      /* ---------- Design tokens (shared with index.html) ---------- */
+    
       :root {
         --gt-navy: #003057;
         --gt-gold: #b3a369;
@@ -27,7 +27,7 @@
         background: #e9edf2;
       }
 
-      /* ---------- Header ---------- */
+    
       header {
         background: var(--gt-navy);
         color: var(--paper);
@@ -52,7 +52,7 @@
         font-size: 1.25rem;
       }
 
-      /* ---------- Form layout ---------- */
+
       main {
         max-width: 480px;
         margin: 24px auto;
@@ -81,7 +81,6 @@
         font-size: 0.9rem;
       }
 
-      /* ---------- Photo picker ---------- */
       .visually-hidden {
         position: absolute;
         width: 1px;
@@ -124,7 +123,7 @@
         color: var(--muted);
       }
 
-      /* ---------- Camera (NEW) ---------- */
+
       .camera-button {
         margin-top: 10px;
         padding: 10px 14px;
@@ -149,7 +148,6 @@
         background: #000;
       }
 
-      /* ---------- Choice groups (facility cards + issue pills) ---------- */
       fieldset {
         border: none;
         margin: 0;
@@ -163,7 +161,6 @@
         padding: 0;
       }
 
-      /* The real radio input is hidden; the styled span after it is what you see */
       .choice input {
         position: absolute;
         opacity: 0;
@@ -232,7 +229,6 @@
         line-height: 1.4;
       }
 
-      /* ---------- AI status + badge ---------- */
       .ai-status {
         margin: 12px 0 0;
         min-height: 1.4em;
@@ -268,7 +264,6 @@
         outline-offset: 2px;
       }
 
-      /* ---------- "Fill in the form" button ---------- */
       .fill-button {
         width: 100%;
         margin-top: 14px;
@@ -300,7 +295,6 @@
         font-size: 1.05rem;
       }
 
-      /* ---------- Inputs ---------- */
       select, textarea, input[type="text"] {
         width: 100%;
         font: inherit;
@@ -319,7 +313,6 @@
         border-color: var(--gt-navy);
       }
 
-      /* ---------- Submit ---------- */
       button[type="submit"] {
         width: 100%;
         padding: 14px;
@@ -361,16 +354,15 @@
     <main>
       <form id="report-form" novalidate>
 
-        <!-- STEP 1: Describe it (words carry the "what's wrong") -->
         <div class="field">
           <label for="report-text">What's wrong?</label>
           <textarea
             id="report-text"
-            placeholder="e.g. The water fountain on the 2nd floor of Klaus isn't working"
+            placeholder="e.g. The water fountain on the 4th floor of Price Gilbert is unfiltered."
           ></textarea>
         </div>
 
-        <!-- Optional photo (helps identify the facility and any visible signs) -->
+        <!-- Insert/take Photo-->
         <div class="field">
           <span class="label">Add a photo <span class="hint">(optional)</span></span>
           <input type="file" id="photo" accept="image/*" capture="environment" class="visually-hidden" />
@@ -397,7 +389,6 @@
         <p class="ai-status" id="ai-status" role="status"></p>
         <button type="button" class="link-button" id="manual-button">Skip, I'll fill it in myself</button>
 
-        <!-- STEP 2: Details. The AI fills these in; the student checks and fixes them. -->
         <div id="details" hidden>
           <h2 class="section-title">Check the details</h2>
           <p class="ai-badge" id="ai-badge" hidden></p>
@@ -432,12 +423,11 @@
       </form>
     </main>
 
-    <!-- Supabase library. Must come BEFORE the script below. -->
+    <!-- Supabase library access. -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
       // ---------- Buildings for the dropdown (coordinates are approximate) ----------
-      // KEEP IN SYNC with BUILDINGS in api/analyze.js: same ids in both files.
       const LOCATIONS = [
         { id: "klaus",          name: "Klaus Building",        lat: 33.7771, lng: -84.3963 },
         { id: "clough",         name: "Clough Commons",        lat: 33.7749, lng: -84.3964 },
@@ -448,9 +438,6 @@
       ];
 
       // ---------- Facility types and their possible problems ----------
-      // KEEP IN SYNC with FACILITY_OPTIONS in api/analyze.js: same ids in both files.
-      // The facility ids (water, toilet, elevator) match the map's PIN_STYLES.
-      // severity "none" = a confirmation that something works, not a problem.
       const FACILITIES = {
         water: {
           label: "Water fountain",
@@ -494,16 +481,13 @@
           note: "For privacy, never photograph people in or near restrooms.",
         },
       };
-
-      // ---------- Supabase setup (publishable key only, NEVER the secret key) ----------
       const SUPABASE_URL = "%VITE_SUPABASE_URL%";
       const SUPABASE_KEY = "%VITE_SUPABASE_PUBLISHABLE_KEY%";
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      // Uploads a photo and returns its public URL (used when a report is submitted)
+      //uploads photo and returns public url for the SupaBase database
       async function uploadPhoto(file) {
         const path = `reports/${Date.now()}.jpg`;
-
         const { error } = await supabaseClient.storage
           .from("accessibility-reports")
           .upload(path, file, { contentType: "image/jpeg" });
@@ -546,19 +530,15 @@
       const canvas = document.getElementById("snapshot");
       const photoStatus = document.getElementById("photo-status");
 
-      // Phones and tablets: the photo box already opens the built-in camera app,
-      // which is more reliable than a live camera inside the page (especially on iPhone).
-      // So the live "Use camera" button is only shown on laptops and desktops.
       const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
       if (isTouchDevice) openCameraButton.hidden = true;
 
-      // ---------- State: everything the page is keeping track of ----------
       let selectedPhoto = null;     // the photo, from the file input OR the camera
       let stream = null;            // the live camera connection
-      let selectedFacility = null;  // e.g. "elevator"
-      let selectedIssue = null;     // e.g. "out_of_service"
-      let aiResult = null;          // the AI's latest answer, saved with the report
-      let latestAnalysis = 0;       // counts analyses so we can ignore outdated answers
+      let selectedFacility = null;  // need elevator
+      let selectedIssue = null;     //need not working
+      let aiResult = null;
+      let latestAnalysis = 0;
 
       // ---------- Fill the building dropdown ----------
       LOCATIONS.forEach((loc) => {
@@ -568,7 +548,6 @@
         locationSelect.appendChild(option);
       });
 
-      // ---------- Build the facility cards from FACILITIES ----------
       Object.entries(FACILITIES).forEach(([id, facility]) => {
         const label = document.createElement("label");
         label.className = "choice";
